@@ -31,7 +31,7 @@ public class MappingSet {
     @Setter
     @Column(updatable = false)
     @JsonIgnore
-    private String createdby;
+    private String created_by;
 
     @Getter
     @Setter

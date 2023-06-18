@@ -5,5 +5,7 @@ package fr.industryportal.ontomapper.config;
  * Config file to hold app needed constants
  */
 public interface Config {
+    String SELF_URL = "http://localhost:1998/";
     String API_URL = "http://data.industryportal.enit.fr/";
+    String ONTOLOGY_FOLDER = "src/main/resources/ontologies/";
 }

@@ -25,6 +25,9 @@ public interface MappingRepository extends JpaRepository<Mapping, Long> {
     @Query(value = "SELECT * FROM mapping WHERE deleted <> true ", nativeQuery = true)
     List<Mapping> findAll();
 
+    @Query(value = "SELECT * FROM mapping m WHERE m.set_id = :setId AND m.deleted <> true", nativeQuery = true)
+    List<Mapping> findAllBySetId(Long setId);
+
 
     @Transactional
     @Modifying
@@ -38,6 +41,9 @@ public interface MappingRepository extends JpaRepository<Mapping, Long> {
 
     @Query(value = "SELECT * FROM mapping WHERE mapping_id = :mid", nativeQuery = true)
     Mapping findByStringId(String mid);
+
+    @Query(value = "SELECT * FROM mapping WHERE (subject_id = :cid and subject_label <> '') or (object_id = :cid and object_label <> '') ", nativeQuery = true)
+    Mapping findByCLassId(String cid );
 
 
 }

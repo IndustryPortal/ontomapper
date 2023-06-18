@@ -1,5 +1,13 @@
 package fr.industryportal.ontomapper;
 
+import fr.industryportal.ontomapper.model.entities.Contribution;
+import fr.industryportal.ontomapper.model.entities.Contributor;
+import fr.industryportal.ontomapper.model.entities.Mapping;
+import fr.industryportal.ontomapper.model.entities.MappingSet;
+import fr.industryportal.ontomapper.model.entities.enums.ContributorType;
+import fr.industryportal.ontomapper.model.entities.enums.EntityType;
+import fr.industryportal.ontomapper.model.entities.enums.MappingCardinality;
+import fr.industryportal.ontomapper.model.entities.enums.PredicateModifier;
 import fr.industryportal.ontomapper.model.repos.ContributionRepository;
 import fr.industryportal.ontomapper.model.repos.ContributorRepository;
 import fr.industryportal.ontomapper.model.repos.MappingRepository;
@@ -12,6 +20,9 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.scheduling.annotation.EnableScheduling;
+
+import java.sql.Date;
+import java.util.Collections;
 
 /**
  * @author Abdelwadoud Rasmi
@@ -46,24 +57,51 @@ public class OntomapperApplication extends SpringBootServletInitializer implemen
     @Override
     public void run(String... args) throws Exception {
 
-
-        //Generating fake data
+    //    Generating fake data
 //        for (int i = 0; i < 100; i++) {
-//            MappingSet set = mappingSetRepository.save(new MappingSet(null, "set" + i, "version" + i, null, "description" + i, null, "license" + i, EntityType.RDFS_DATATYPE, "", "", EntityType.RDFS_CLASS, "", "", "", "", new Date(), "", "", "", "", "", "", "", new Date(), null));
+//            MappingSet set = mappingSetRepository.save(new MappingSet(
+//                    (long) i,
+//                    null,
+//                    "set" + i,
+//                    "version" + i,
+//                    null,
+//                    "description" + i,
+//                    null,
+//                    "license" + i,
+//                    EntityType.RDFS_DATATYPE,
+//                    "",
+//                    "",
+//                    EntityType.RDFS_CLASS,
+//                    "",
+//                    "",
+//                    "",
+//                    "",
+//                    new Date(2023, 04, 06),
+//                    "",
+//                    "",
+//                    "",
+//                    "",
+//                    "",
+//                    "",
+//                    "",
+//                    new Date(2023, 04, 06),
+//                    null,
+//                    false));
 //            for (int j = 0; j < 1000; j++) {
-//                Mapping mapping = mappingRepository.save(new Mapping(null,
+//                Mapping mapping = mappingRepository.save(new Mapping((long) (i+j),
+//                        null,
 //                        i+"mapping" + j, "subject" + j, "label" + j, "category" + i, "", "", PredicateModifier.NOT, "", "", "",
 //                        "", null, "", EntityType.RDFS_DATATYPE, "", "", EntityType.OWL_CLASS, "", "", "",
-//                        "", MappingCardinality.MANY_TO_MANY, "", "", new Date(), 0, "", "", "", "",
-//                        "", 0, "", "", "", "", new Date(), set));
+//                        "", MappingCardinality.MANY_TO_MANY, "", "", new Date(2023, 03, 20 ), 0, "", "", "", "",
+//                        "", 0, "", "", "", "", new Date(2023, 04, 06), set,false));
 //            }
 //        }
 //
 //        for (int i = 0; i < 100; i++) {
-//            Contributor contributor = contributorRepository.save(new Contributor(null, "contributor" + i, "label" + i, null));
-//                contributionRepository.save(new Contribution(null, contributor, ContributorType.AUTHOR, mappingSetRepository.findAll(), mappingRepository.findAll()));
-//                contributionRepository.save(new Contribution(null, contributor, ContributorType.CREATOR, mappingSetRepository.findAll(), null));
-//                contributionRepository.save(new Contribution(null, contributor, ContributorType.REVIEWER, mappingSetRepository.findAll(), mappingRepository.findAll()));
+//            Contributor contributor = contributorRepository.save(new Contributor((long) i, "contributor" + i, "label" + i, null, false));
+//                contributionRepository.save(new Contribution((long) i, contributor, ContributorType.AUTHOR, mappingSetRepository.findAll(), mappingRepository.findAll(), false));
+//                contributionRepository.save(new Contribution((long) i, contributor, ContributorType.CREATOR, mappingSetRepository.findAll(), null, false));
+//                contributionRepository.save(new Contribution((long) i, contributor, ContributorType.REVIEWER, mappingSetRepository.findAll(), mappingRepository.findAll(), false));
 //
 //        }
 

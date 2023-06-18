@@ -1,5 +1,7 @@
 package fr.industryportal.ontomapper.services;
 
+import fr.industryportal.ontomapper.config.Config;
+import fr.industryportal.ontomapper.model.requests.User;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -11,11 +13,7 @@ import java.nio.charset.StandardCharsets;
 
 public class ApiService {
 
-    final static String baseUrl = "http://localhost:1998";
-    final static private String username = "nass";
-    final static private String apikey = "23075fb5-0559-4cb1-9888-742ea7b27e6f";
-
-    public static Long postMappingSet(JSONObject mappingSet) {
+    public static Long postMappingSet(String apikey, String username, JSONObject mappingSet) {
 
         JSONArray body = new JSONArray();
         body.put(mappingSet);
@@ -23,7 +21,7 @@ public class ApiService {
         String queryParams = "username=" + username + "&apikey=" + apikey;
 
         // Build the request URI with parameters
-        URI uri = URI.create(baseUrl + "/set" + "?" + queryParams);
+        URI uri = URI.create(Config.SELF_URL + "set" + "?" + queryParams);
 
         // Create the HttpClient
         HttpClient httpClient = HttpClient.newBuilder().build();
@@ -47,13 +45,13 @@ public class ApiService {
             return null;
         }
     }
-    public static Integer postMappings(JSONArray mappings) {
+    public static Integer postMappings(String apikey, String username, JSONArray mappings) {
 
         // Set request parameters
         String queryParams = "username=" + username + "&apikey=" + apikey;
 
         // Build the request URI with parameters
-        URI uri = URI.create(baseUrl + "/mapping" + "?" + queryParams);
+        URI uri = URI.create(Config.SELF_URL + "mapping" + "?" + queryParams);
 
         // Create the HttpClient
         HttpClient httpClient = HttpClient.newBuilder().build();

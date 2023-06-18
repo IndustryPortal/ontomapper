@@ -11,6 +11,7 @@ import fr.industryportal.ontomapper.model.repos.MappingRepository;
 import fr.industryportal.ontomapper.model.repos.MappingSetRepository;
 import fr.industryportal.ontomapper.model.requests.SetRequest;
 import fr.industryportal.ontomapper.model.requests.User;
+import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -86,10 +88,11 @@ public class MappingSetController {
      * Add or delete a list of mappingSets
      */
     @PostMapping("")
-    public void addOrEditMappingSets(HttpServletRequest request,
+    public JSONObject addOrEditMappingSets(HttpServletRequest request,
                                      @RequestBody List<SetRequest> sets) {
 
         User user = ((User) request.getAttribute("user"));
+        AtomicReference<Long> generatedId = new AtomicReference<>() ;
         //
         sets.forEach(setRequest -> {
             MappingSet s = setRequest.toDBModel(mappingSetRepository, user.getApikey());
@@ -101,9 +104,12 @@ public class MappingSetController {
                     setRequest.setId(s.getId());
 
                 s = mappingSetRepository.save(setRequest.toDBModel(mappingSetRepository, user.getApikey()));
+
             }
             //saving creators (as contributors) if they don't exist
             MappingSet finalS = s;
+            generatedId.set(s.getId());
+
             if (setRequest.getCreators() != null)
                 setRequest.getCreators().forEach(c -> {
                     Contributor creator;
@@ -124,6 +130,11 @@ public class MappingSetController {
                 .getInstance(mappingSetRepository)
                 .rearm();
 
+        JSONObject response = new JSONObject();
+        response.put("set_id", generatedId.get());
+
+        return response;
+
     }
 
 
@@ -138,7 +149,7 @@ public class MappingSetController {
         //
         Optional<MappingSet> mappingSet = mappingSetRepository.findById(set);
         if (mappingSet.isPresent() && (user.getRoles().contains("ADMINISTRATOR") ||
-                user.getApikey().equals(mappingSet.get().getCreatedby()))) {
+                user.getApikey().equals(mappingSet.get().getCreated_by()))) {
             //
             mappingRepository.deleteBySetId(set);
             mappingSetRepository.deleteById(set);

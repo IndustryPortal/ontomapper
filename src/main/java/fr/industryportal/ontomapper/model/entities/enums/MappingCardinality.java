@@ -18,4 +18,15 @@ public enum MappingCardinality {
 
     @Getter
     private final String value;
+
+    public String getValue() {
+        return value == null || value.equals("") ? "" : value;
+    }
+
+    @Override
+    public String toString() {
+        return getValue();
+    }
+
+
 }

@@ -48,6 +48,7 @@ public class MappingController {
     @GetMapping("")
     public List<Mapping> getFiftyMappings(@RequestParam Long set_id, @RequestParam Long from) {
         MappingSet mappingSet = new MappingSet();
+        System.out.println("set id is: " + set_id.toString());
         mappingSet.setId(set_id);
         //
         if (mappingSet.getSource() == null || mappingSet.getSource().isEmpty())
@@ -55,6 +56,22 @@ public class MappingController {
         else {
             List<Mapping> mappings = new ArrayList<>();
             mappingSet.getSource().forEach(ms -> mappings.addAll(CacheMapping.getInstance(mappingRepository).get(ms.getId(), from)));
+            return mappings;
+        }
+    }
+
+    /**
+     * get all mappings for a specific set
+     */
+    @GetMapping("/all")
+    public List<Mapping> getAllMappings(@RequestParam Long set_id) {
+        MappingSet mappingSet = new MappingSet();
+        mappingSet.setId(set_id);
+        if (mappingSet.getSource() == null || mappingSet.getSource().isEmpty())
+            return mappingRepository.findAllBySetId(set_id);
+        else {
+            List<Mapping> mappings = new ArrayList<>();
+            mappingSet.getSource().forEach(ms -> mappings.addAll(mappingRepository.findAllBySetId(ms.getId())));
             return mappings;
         }
     }
@@ -77,7 +94,7 @@ public class MappingController {
                     mapping.setId(m.getId());
 
                 // checking if the set has sources, if true then don't insert the mapping and skip tgis iteration
-                if (m.getSet().getSource().isEmpty()) {
+                if (m==null || m.getSet().getSource().isEmpty()) {
                     m = mappingRepository.save(mapping.toDBModel(mappingSetRepository, user.getApikey()));
                     saved.add(m);
                 } else
@@ -120,7 +137,7 @@ public class MappingController {
         //
         Optional<Mapping> m = mappingRepository.findById(mapping);
         if (m.isPresent() && (user.getRoles().contains("ADMINISTRATOR") ||
-                user.getApikey().equals(m.get().getCreatedby()))) {
+                user.getApikey().equals(m.get().getCreated_by()))) {
             //
             mappingRepository.deleteById(mapping);
         }

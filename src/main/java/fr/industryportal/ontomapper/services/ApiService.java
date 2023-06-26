@@ -5,7 +5,9 @@ import fr.industryportal.ontomapper.model.requests.User;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -74,4 +76,43 @@ public class ApiService {
             return null;
         }
     }
+
+    public static Integer extractManchesterMappings(String apikey, String username,  String acronym, String classUri ) throws UnsupportedEncodingException {
+
+        // Set request parameters
+        String encodedUsername = URLEncoder.encode(username, "UTF-8");
+        String encodedApikey = URLEncoder.encode(apikey, "UTF-8");
+        String encodedClassUri = URLEncoder.encode(classUri, "UTF-8");
+
+        String queryParams = "username=" + encodedUsername +
+                "&apikey=" + encodedApikey +
+                "&classUri=" + encodedClassUri;
+
+
+        // Build the request URI with parameters
+        URI uri = URI.create(Config.SELF_URL + "manchester/" + acronym + "/extract" + "?" + queryParams);
+
+        // Create the HttpClient
+        HttpClient httpClient = HttpClient.newBuilder().build();
+
+        // Build the request
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(uri)
+                .GET()
+                .header("Content-Type", "Application/json")
+                .build();
+
+        try {
+            // Send the request
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            return response.statusCode();
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Handle any errors that occur during the request
+            return null;
+        }
+
+    }
+
 }

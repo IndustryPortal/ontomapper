@@ -22,6 +22,7 @@ import uk.ac.manchester.cs.owl.owlapi.OWLSubClassOfAxiomImpl;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -39,6 +40,8 @@ public class ManchesterOwlController {
 
     @GetMapping("/{acronym}/extract")
     public String extractClassRelationsByCLassId(HttpServletRequest request, @PathVariable String acronym, @RequestParam String classUri) {
+        System.out.println("======start working on " + acronym);
+        System.out.println("======looking for mapping of class:" + classUri);
         ExtractHelper extractHelper = new ExtractHelper();
         classUri = classUri.trim();
         User user = ((User) request.getAttribute("user"));
@@ -51,15 +54,11 @@ public class ManchesterOwlController {
             o.put("message", "error in getting ontology source file from portal");
             return o.toString();
         }
-        OntologyConfigurator configurator = new OntologyConfigurator();
-        configurator.setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT);
-        OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-        manager.setOntologyConfigurator(configurator);
         OWLOntology ontology = null;
 
         JSONArray result = new JSONArray();
         try {
-            ontology = manager.loadOntologyFromOntologyDocument(new File(filePath));
+            ontology = ExtractHelper.getOntologyFromFile(new File(filePath));
 
             for (OWLAxiom axiom : ontology.getLogicalAxioms()) {
 
@@ -195,7 +194,7 @@ public class ManchesterOwlController {
         mappings.addAll(manchesterMappingRepository.findByStringClassUri(classUri));
 
         if (mappings.isEmpty()) {
-            return "not found";
+            return "[]";
         } else {
             //return the mappings table in a json format
             ObjectMapper objectMapper = new ObjectMapper();

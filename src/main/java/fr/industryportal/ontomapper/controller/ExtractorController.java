@@ -89,7 +89,7 @@ public class ExtractorController {
             return o.toString();
         }
         //String filePath = Config.ONTOLOGY_FOLDER + "ROMAIN.owl";
-        String ontologyUri = extractHelper.getOntologySource(new File(filePath));
+        //String ontologyUri = extractHelper.getOntologySource(new File(filePath));
         ArrayList<Triple> result = new ArrayList<>();
         JSONArray jsonArray = new JSONArray();
         Model m = ModelFactory.createDefaultModel();

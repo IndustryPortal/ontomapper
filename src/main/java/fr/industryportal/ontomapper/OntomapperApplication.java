@@ -1,5 +1,6 @@
 package fr.industryportal.ontomapper;
 
+import fr.industryportal.ontomapper.helpers.CronHelper;
 import fr.industryportal.ontomapper.model.entities.Contribution;
 import fr.industryportal.ontomapper.model.entities.Contributor;
 import fr.industryportal.ontomapper.model.entities.Mapping;

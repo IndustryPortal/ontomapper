@@ -35,6 +35,15 @@ public class ExtractHelper {
 
     private static final Pattern RELATION_PATTERN = Pattern.compile("([!\\^\\+]?)(.+)");
 
+    public static OWLOntology getOntologyFromFile(File file) throws OWLOntologyCreationException {
+        OntologyConfigurator configurator = new OntologyConfigurator();
+        configurator.setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT);
+        OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
+        manager.setOntologyConfigurator(configurator);
+        return manager.loadOntologyFromOntologyDocument(file);
+
+    }
+
     public static String replaceClassURIsWithLabels(String ontologyString, OWLOntology ontology, OWLAxiom axiom) {
         String replacedString = ontologyString;
 
@@ -229,7 +238,7 @@ public class ExtractHelper {
 
             // Check if the file exists
             if (file.exists()) {
-                System.out.println("======The file already exists.");
+                System.out.println("The file already exists.");
                 return Config.ONTOLOGY_FOLDER + fileName;
             }
 
@@ -243,7 +252,7 @@ public class ExtractHelper {
             }
             fileOutputStream.flush();
             fileOutputStream.close();
-            System.out.println("======file downloading done");
+            System.out.println("file downloading done");
             return Config.ONTOLOGY_FOLDER + fileName;
         } catch (IOException e) {
             // handle exception
@@ -253,10 +262,8 @@ public class ExtractHelper {
     }
 
     public String getOntologySource(File file) {
-        OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-
         try {
-            OWLOntology ontology = manager.loadOntologyFromOntologyDocument(file);
+            OWLOntology ontology = ExtractHelper.getOntologyFromFile(file);
 
             return ontology.getOntologyID().getOntologyIRI().get().toString();
         } catch (Exception e) {
@@ -607,10 +614,9 @@ public class ExtractHelper {
 
     public Set<OWLImportsDeclaration> getImports(String filePath) throws OWLOntologyCreationException {
         // Load the ontology from a file
-        OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
         File file = new File(filePath);
         try {
-            OWLOntology ontology = manager.loadOntologyFromOntologyDocument(file);
+            OWLOntology ontology = ExtractHelper.getOntologyFromFile(file);
 // Get the imports of the ontology
             return ontology.getImportsDeclarations();
         } catch (Exception e) {

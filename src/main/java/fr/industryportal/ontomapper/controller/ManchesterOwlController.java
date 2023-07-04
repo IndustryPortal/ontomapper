@@ -40,8 +40,7 @@ public class ManchesterOwlController {
 
     @GetMapping("/{acronym}/extract")
     public String extractClassRelationsByCLassId(HttpServletRequest request, @PathVariable String acronym, @RequestParam String classUri) {
-        System.out.println("======start working on " + acronym);
-        System.out.println("======looking for mapping of class:" + classUri);
+        System.out.println("======looking for mapping of class:" + classUri + " from " + acronym + " ontology");
         ExtractHelper extractHelper = new ExtractHelper();
         classUri = classUri.trim();
         User user = ((User) request.getAttribute("user"));

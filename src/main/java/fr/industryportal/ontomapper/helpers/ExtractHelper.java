@@ -1,6 +1,8 @@
 package fr.industryportal.ontomapper.helpers;
 
 import fr.industryportal.ontomapper.config.Config;
+import fr.industryportal.ontomapper.model.entities.enums.MappingSetType;
+import fr.industryportal.ontomapper.model.entities.enums.MappingType;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.*;
@@ -19,10 +21,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -650,6 +649,135 @@ public class ExtractHelper {
             index += searchString.length();
         }
         return count;
+    }
+
+    private MappingSetType isMappingToOtherOntology(OWLClass sourceClass, OWLClass targetClass, OWLOntology ontology) {
+
+        // Get the IRI of the class expression
+        IRI sourceClassIRI = sourceClass.getIRI();
+        IRI targetClassIRI = targetClass.getIRI();
+
+        // Get the IRI of the current ontology
+        String ontologyIRI = ontology.getOntologyID().getOntologyIRI().get().getNamespace();
+
+        // Check if the class expression refers to another ontology without importing it
+        if (!sourceClassIRI.toString().contains(ontologyIRI)) {
+            // Get the imported ontologies
+            Set<OWLOntology> importedOntologies = ontology.getImports();
+
+            // Check if the other ontology is imported
+            for (OWLOntology importedOntology : importedOntologies) {
+                if (importedOntology.getOntologyID().getOntologyIRI().equals(sourceClassIRI)) {
+                    // Class expression refers to an imported ontology
+                    return MappingSetType.INTER;
+                }
+            }
+
+            // Class expression does not refer to an imported ontology
+            return MappingSetType.CROSS;
+        } else if (!targetClassIRI.toString().contains(ontologyIRI.toString())) {
+            // Get the imported ontologies
+            Set<OWLOntology> importedOntologies = ontology.getImports();
+
+            // Check if the other ontology is imported
+            for (OWLOntology importedOntology : importedOntologies) {
+                if (importedOntology.getOntologyID().getOntologyIRI().equals(targetClassIRI)) {
+                    // Class expression refers to an imported ontology
+                    return MappingSetType.INTER;
+                }
+            }
+
+            // Class expression does not refer to an imported ontology
+            return MappingSetType.CROSS;
+        }
+
+        // Class expression refers to the same ontology
+        return MappingSetType.INTRA;
+    }
+
+    public Set<JSONObject> extractCrossMappings(Long mappingSetId, OWLOntology sourceOntology) {
+        Set<JSONObject> crossMappings = new HashSet<>();
+
+        for (OWLAxiom axiom : sourceOntology.getAxioms()) {
+
+            for (OWLClass cls:
+                 axiom.getClassesInSignature()) {
+                if (cls.getIRI().toString().equals("http://purl.obolibrary.org/obo/DOID_8986")) {
+                    int b = 5;
+                }
+
+            }
+
+            if (!MappingType.isMappingType(axiom.getAxiomType())) continue;
+
+
+            //get first and second class from axiom
+            OWLClass sourceCLass = null;
+            OWLClass targetCLass = null;
+
+            Iterator<OWLClass> classIterator = axiom.getClassesInSignature().iterator();
+            if (classIterator.hasNext()) {
+                sourceCLass = classIterator.next();
+            }
+            if (classIterator.hasNext()) {
+                targetCLass = classIterator.next();
+            }
+
+                if (isMappingToOtherOntology(sourceCLass, targetCLass,  sourceOntology).equals(MappingSetType.CROSS)) {
+                    JSONObject tripleJSON = new JSONObject();
+
+                    String subjectUri = sourceCLass.getIRI().toString();
+                    String objectUri = targetCLass.getIRI().toString();
+                    String predicateUri = String.valueOf(axiom.getAxiomType());
+
+                    tripleJSON.put("other", "cross");
+                    tripleJSON.put("mapping_id", subjectUri+ "_" + predicateUri+ "_" +objectUri );
+                    //tripleJSON.put("mapping_provider", extractHelper.getMappingProvider(intraMapping, interMapping, crossMapping, tripleJSON.getString("other")) );
+                    //tripleJSON.put("mapping_tool", extractHelper.getMappingTool(comment) );
+                    //tripleJSON.put("mapping_tool_version", "");
+                    //tripleJSON.put("match_string", extractHelper.getMatchString(comment) );
+                    //tripleJSON.put("source", "" );
+                    tripleJSON.put("subject_id",  subjectUri);
+                    //tripleJSON.put("subject_label",  );
+                    //tripleJSON.put("subject_type", extractHelper.getType(subject));
+                    //tripleJSON.put("subject_category", extractHelper.getCategory(subject));
+                    tripleJSON.put("subject_source", sourceOntology.getOntologyID().getOntologyIRI().get()  );
+                    tripleJSON.put("subject_source_version", sourceOntology.getOntologyID().getVersionIRI() );
+                    //tripleJSON.put( "subject_match_field", extractHelper.getMatchField(comment) );
+                    //tripleJSON.put("subject_preprocessing", extractHelper.getPreProcessing() );
+//                    tripleJSON.put("predicate_id", extractHelper.getPredicateIdentifier(predicateUri));
+//                    tripleJSON.put("predicate_label", extractHelper.getLabel(predicate) );
+//                    tripleJSON.put("predicate_Modifier", extractHelper.getPredicateModifier(predicateUri) );
+//                    tripleJSON.put("object_id",  objectUri);
+//                    tripleJSON.put("object_label", objectLabel);
+//                    tripleJSON.put("object_type", objectType);
+//                    tripleJSON.put("object_category", objectCategory);
+//                    tripleJSON.put("object_source", extractHelper.getOntologySource(objectUri));
+//                    tripleJSON.put("object_source_version", ontologyVersion );
+//                    tripleJSON.put("object_match_field", extractHelper.getMatchField(comment) );
+//                    tripleJSON.put("object_preprocessing", extractHelper.getPreProcessing() );
+//                    tripleJSON.put("justification", extractHelper.getMappingsJustification(subject, s.getObject(), predicate , comment) );
+//                    tripleJSON.put("semantic_similarity_measure", extractHelper.getSemanticSimilarity(comment));
+//                    tripleJSON.put("semantic_similarity_score", extractHelper.getSemanticSimilarityScore(comment));
+//                    tripleJSON.put("confidence", extractHelper.getConfidence(comment) );
+//                    tripleJSON.put("cardinality", "MANY_TO_MANY");
+//                    tripleJSON.put("contriutors", new JSONArray());
+//                    tripleJSON.put("license", "");
+//                    tripleJSON.put("mapping_date", extractHelper.getDate());
+//                    tripleJSON.put("comment", comment );
+
+                    int b = 5;
+
+            }
+        }
+
+        return crossMappings;
+    }
+
+    private boolean checkIfInSignature(OWLClass cls, OWLOntology ont) {
+
+        return ont.getClassesInSignature().contains(cls);
+
     }
 
 }

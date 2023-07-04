@@ -82,7 +82,7 @@ public class ExtractorController {
         String apikey = user.getApikey();
         String username = user.getUsername();
         String filePath = extractHelper.downloadOntologyFile(apikey, acronym);
-        //String filePath = Config.ONTOLOGY_FOLDER + "Core.rdf";
+        //String filePath = Config.ONTOLOGY_FOLDER + "doid.owl";
         if (filePath == null ) {
             JSONObject o = new JSONObject();
             o.put("message", "error in getting ontology source file from portal");
@@ -120,6 +120,8 @@ public class ExtractorController {
             Long interMappingSetId = ApiService.postMappingSet(apikey, username, interMapping);
 
             Long crossMappingSetId = ApiService.postMappingSet(apikey, username, crossMapping);
+
+            extractHelper.extractCrossMappings(crossMappingSetId, ExtractHelper.getOntologyFromFile(new File(filePath)) );
 
 
 
@@ -304,5 +306,7 @@ public class ExtractorController {
 //            return result.toString();
 //
 //        }
+
+
 
 }

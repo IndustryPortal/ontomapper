@@ -28,18 +28,23 @@ public class CronHelper {
     public static int parseAllPortalClasses(String apikey, String username) {
         CronHelper.extractAcronyms(apikey).forEach(
                 acro -> {
-                    for (String cls : CronHelper.getClassesByAcronym(acro, apikey)) {
-                        try {
-                            ApiService.extractManchesterMappings(apikey, username, acro, cls);
-                        } catch (UnsupportedEncodingException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                    parseOntology(apikey, username, acro);
                 }
         );
 
         return 1;
 
+    }
+
+    public static int parseOntology(String apikey, String username, String acro) {
+        for (String cls : CronHelper.getClassesByAcronym(acro, apikey)) {
+            try {
+                ApiService.extractManchesterMappings(apikey, username, acro, cls);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+        return 1;
     }
 
     public static List<String> extractAcronyms(String apikey) {

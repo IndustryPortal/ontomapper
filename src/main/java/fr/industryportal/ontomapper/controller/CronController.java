@@ -4,6 +4,7 @@ import fr.industryportal.ontomapper.helpers.CronHelper;
 import fr.industryportal.ontomapper.helpers.ExtractHelper;
 import fr.industryportal.ontomapper.model.requests.User;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,5 +25,14 @@ public class CronController {
         //CronHelper.extractAcronyms(apikey);
         CronHelper.parseAllPortalClasses(apikey, username);
         return "ok";
+    }
+
+    @GetMapping("/{acronym}")
+    public String parseOntology(HttpServletRequest request, @PathVariable String acronym ) {
+        User user = ((User) request.getAttribute("user"));
+        String apikey = user.getApikey();
+        String username = user.getUsername();
+        CronHelper.parseOntology(apikey, username, acronym);
+        return "done parsing mappings from " + acronym;
     }
 }

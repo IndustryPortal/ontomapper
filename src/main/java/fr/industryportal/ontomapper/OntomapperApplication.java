@@ -1,5 +1,6 @@
 package fr.industryportal.ontomapper;
 
+import fr.industryportal.ontomapper.config.Config;
 import fr.industryportal.ontomapper.helpers.CronHelper;
 import fr.industryportal.ontomapper.model.entities.Contribution;
 import fr.industryportal.ontomapper.model.entities.Contributor;
@@ -57,6 +58,12 @@ public class OntomapperApplication extends SpringBootServletInitializer implemen
 
     @Override
     public void run(String... args) throws Exception {
+//
+//        // Set proxy settings
+//        System.setProperty("http.proxyHost", Config.PROXY_HOST);
+//        System.setProperty("http.proxyPort", Config.PROXY_PORT);
+//        System.setProperty("https.proxyHost", Config.PROXY_HOST);
+//        System.setProperty("https.proxyPort", Config.PROXY_PORT);
 
     //    Generating fake data
 //        for (int i = 0; i < 100; i++) {

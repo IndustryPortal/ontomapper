@@ -8,6 +8,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Abdelwadoud Rasmi
@@ -46,4 +47,6 @@ public interface MappingRepository extends JpaRepository<Mapping, Long> {
     Mapping findByCLassId(String cid );
 
 
+    @Query(value = "SELECT * FROM mapping WHERE mapping_id = :id", nativeQuery = true)
+    Optional<Mapping> findByMappingId(String id);
 }

@@ -9,9 +9,18 @@ import lombok.Getter;
  */
 @AllArgsConstructor
 public enum PredicateModifier {
-    NOT("Not");
+    NOT("Not"),
+    EMPTY("");
 
     @Getter
     private String value;
 
+    PredicateModifier() {
+        this.value = "";
+    }
+
+    @Override
+    public String toString() {
+        return value.toString();
+    }
 }

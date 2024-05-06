@@ -134,11 +134,11 @@ public class MappingSet {
     @Column(updatable = false)
     private Date created_at;
 
-    @Getter
-    @Setter
-    @OneToMany(mappedBy = "set")
-    @JsonIgnore
-    private List<Mapping> mappings;
+//    @Getter
+//    @Setter
+//    @OneToMany(mappedBy = "set")
+//    @JsonIgnore
+//    private List<Mapping> mappings;
 
     @Getter
     @Setter

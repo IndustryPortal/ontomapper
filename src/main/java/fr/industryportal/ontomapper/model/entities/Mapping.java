@@ -46,6 +46,7 @@ public class Mapping {
 
     @Getter
     @Setter
+    @Column(columnDefinition = "TEXT")
     private String subject_label;
 
     @Getter
@@ -71,6 +72,7 @@ public class Mapping {
 
     @Getter
     @Setter
+    @Column(columnDefinition = "TEXT")
     private String object_label;
 
     @Getter
@@ -79,6 +81,7 @@ public class Mapping {
 
     @Getter
     @Setter
+    @Column(columnDefinition = "TEXT")
     private String justification;
 
     @Getter
@@ -88,6 +91,7 @@ public class Mapping {
 
     @Getter
     @Setter
+    @Column(columnDefinition = "TEXT")
     private String license;
 
     @Getter

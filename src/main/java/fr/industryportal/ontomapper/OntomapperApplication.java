@@ -14,6 +14,8 @@ import fr.industryportal.ontomapper.model.repos.ContributionRepository;
 import fr.industryportal.ontomapper.model.repos.ContributorRepository;
 import fr.industryportal.ontomapper.model.repos.MappingRepository;
 import fr.industryportal.ontomapper.model.repos.MappingSetRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -47,6 +49,9 @@ public class OntomapperApplication extends SpringBootServletInitializer implemen
     @Autowired
     private ContributionRepository contributionRepository;
 
+    static final Logger log =
+            LoggerFactory.getLogger(OntomapperApplication.class);
+
     public static void main(String[] args) {
         SpringApplication.run(OntomapperApplication.class, args);
     }
@@ -58,12 +63,12 @@ public class OntomapperApplication extends SpringBootServletInitializer implemen
 
     @Override
     public void run(String... args) throws Exception {
-//
-//        // Set proxy settings
-//        System.setProperty("http.proxyHost", Config.PROXY_HOST);
-//        System.setProperty("http.proxyPort", Config.PROXY_PORT);
-//        System.setProperty("https.proxyHost", Config.PROXY_HOST);
-//        System.setProperty("https.proxyPort", Config.PROXY_PORT);
+
+        // Set proxy settings
+        System.setProperty("http.proxyHost", Config.PROXY_HOST);
+        System.setProperty("http.proxyPort", Config.PROXY_PORT);
+        System.setProperty("https.proxyHost", Config.PROXY_HOST);
+        System.setProperty("https.proxyPort", Config.PROXY_PORT);
 
     //    Generating fake data
 //        for (int i = 0; i < 100; i++) {

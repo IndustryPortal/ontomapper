@@ -1,14 +1,28 @@
 package fr.industryportal.ontomapper.controller;
 
+import fr.industryportal.ontomapper.OntomapperApplication;
 import fr.industryportal.ontomapper.helpers.CronHelper;
 import fr.industryportal.ontomapper.helpers.ExtractHelper;
+import fr.industryportal.ontomapper.model.repos.LinkedDataMappingRepository;
+import fr.industryportal.ontomapper.model.repos.ManchesterMappingRepository;
+import fr.industryportal.ontomapper.model.repos.MappingRepository;
+import fr.industryportal.ontomapper.model.repos.MappingSetRepository;
 import fr.industryportal.ontomapper.model.requests.User;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import fr.industryportal.ontomapper.services.ApiService;
+import org.json.JSONArray;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Nasreddine Bouchemel
@@ -17,22 +31,170 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("/cron")
 public class CronController {
 
-    @GetMapping("")
-    public String parseAllOntologies(HttpServletRequest request) {
+    @Autowired
+    ManchesterMappingRepository manchesterMappingRepository;
+
+    @Autowired
+    LinkedDataMappingRepository linkedDataMappingRepository;
+
+    @Autowired
+    MappingRepository mappingRepository;
+
+    @Autowired
+    MappingSetRepository mappingSetRepository;
+
+
+    @GetMapping("/manchester")
+    public String parseAllOntologiesForManchester(HttpServletRequest request) {
+        System.out.println("=====starting parsing all ontologies to get manchester mappings");
         User user = ((User) request.getAttribute("user"));
         String apikey = user.getApikey();
         String username = user.getUsername();
         //CronHelper.extractAcronyms(apikey);
-        CronHelper.parseAllPortalClasses(apikey, username);
+        CronHelper.parseAllPortalClasses(apikey, username, manchesterMappingRepository);
         return "ok";
     }
 
-    @GetMapping("/{acronym}")
-    public String parseOntology(HttpServletRequest request, @PathVariable String acronym ) {
+    @GetMapping("/linked_data")
+    public String parseAllOntologiesForLinkedData(HttpServletRequest request) {
+        System.out.println("=====starting parsing all ontologies to get linked data mappings");
         User user = ((User) request.getAttribute("user"));
         String apikey = user.getApikey();
         String username = user.getUsername();
-        CronHelper.parseOntology(apikey, username, acronym);
-        return "done parsing mappings from " + acronym;
+        CronHelper.parseOntologiesForLinkedDataMappings(apikey, username, linkedDataMappingRepository );
+        return "ok";
+
     }
+
+    @GetMapping("/{acronym}/manchester")
+    public String parseOntologyForManchster(HttpServletRequest request, @PathVariable String acronym ) {
+        System.out.println("=====starting parsing ontology " + acronym + " to get manchester mappings");
+        ExtractHelper.logger.info("=====starting parsing ontology " + acronym + " to get manchester mappings");
+
+        User user = ((User) request.getAttribute("user"));
+        String apikey = user.getApikey();
+        String username = user.getUsername();
+
+        ExtractHelper extractHelper = new ExtractHelper();
+
+        String filepath = extractHelper.downloadOntologyFile(apikey, acronym);
+        if (filepath == null) {
+            return null;
+        }
+        OWLOntology sourceOntology = ExtractHelper.getOntologyFromFile(new File(filepath));
+        if (sourceOntology == null) {
+            return null;
+        }
+
+        String result = CronHelper.parseOntologyForManchester(sourceOntology, apikey, username, acronym, manchesterMappingRepository);
+        if (result == "done") {
+            return "done parsing mappings from " + acronym;
+        } else {
+            return result;
+        }
+    }
+
+    @GetMapping("/upload_to_portal")
+    public int uploadMappingsToPortal(HttpServletRequest request) {
+        User user = ((User) request.getAttribute("user"));
+        String apikey = user.getApikey();
+        String username = user.getUsername();
+        return ApiService.uploadMappingToPortal(apikey, linkedDataMappingRepository);
+
+    }
+
+
+    @GetMapping("{acronym}/upload_to_portal")
+    public int uploadMappingsToPortal(HttpServletRequest request, @PathVariable String acronym) {
+        User user = ((User) request.getAttribute("user"));
+        String apikey = user.getApikey();
+        String username = user.getUsername();
+        return ApiService.uploadOntologyMappingToPortal(acronym, apikey, linkedDataMappingRepository);
+
+    }
+
+    @GetMapping("{acronym}")
+    public String parseOntologyForMappings(HttpServletRequest request, @PathVariable String acronym) throws OWLOntologyCreationException, IOException {
+        ExtractHelper.logger.log(Level.INFO, "=====starting parsing ontology " + acronym);
+
+        User user = ((User) request.getAttribute("user"));
+        String apikey = user.getApikey();
+        String username = user.getUsername();
+
+        ExtractorController extCOn = new ExtractorController();
+
+        extCOn.extractTriplesWithJena(request, acronym);
+
+        ExtractHelper extractHelper = new ExtractHelper();
+
+        String filepath = extractHelper.downloadOntologyFile(apikey, acronym);
+        if (filepath == null) {
+            return null;
+        }
+        OWLOntology sourceOntology = ExtractHelper.getOntologyFromFile(new File(filepath));
+        if (sourceOntology == null) {
+            return null;
+        }
+
+        //intra mapping
+        CronHelper.parseOntologyForManchester(sourceOntology, apikey, username, acronym, manchesterMappingRepository);
+
+        //cross && inter mappings
+        JSONArray result =  extractHelper.extractLinkedDataMappings(sourceOntology, acronym, apikey, username).getJSONArray("linked_data");
+        extractHelper.storeLinkedDataMappings(linkedDataMappingRepository, result);
+        JSONArray sssomRes =   extractHelper.extractLinkedDataMappings(sourceOntology, acronym, apikey, username).getJSONArray("sssom");
+        extractHelper.storeSSSOMMappings(mappingRepository, mappingSetRepository, sssomRes);
+
+        ApiService.uploadOntologyMappingToPortal(acronym, apikey, linkedDataMappingRepository);
+
+        return "operation ended with success";
+
+    }
+
+    @PostMapping("/parse_file/{acronym}")
+    public String parseOntologyForMappings(
+            HttpServletRequest request,
+            @PathVariable String acronym,
+            @RequestPart("file") MultipartFile ontologyFile  // This parameter is for the file
+    ) throws IOException {
+        ExtractHelper.logger.log(Level.INFO, "=====starting parsing file ");
+
+        if (ontologyFile == null || ontologyFile.isEmpty()) {
+            return "Error: Ontology file is not provided.";
+        }
+
+        User user = ((User) request.getAttribute("user"));
+        String apikey = user.getApikey();
+        String username = user.getUsername();
+
+        ExtractHelper extractHelper = new ExtractHelper();
+
+        OWLOntology sourceOntology = ExtractHelper.getOntologyFromFile(convertMultipartFileToFile(ontologyFile));
+        if (sourceOntology == null) {
+            return "Error: could not read ontology from file.";
+        }
+
+        CronHelper.parseOntologyForManchester(sourceOntology, apikey, username, acronym, manchesterMappingRepository);
+
+        //cross && inter mappings
+        JSONArray result =  extractHelper.extractLinkedDataMappings(sourceOntology, acronym, apikey, username).getJSONArray("linked_data");
+        extractHelper.storeLinkedDataMappings(linkedDataMappingRepository, result);
+        JSONArray sssomRes =   extractHelper.extractLinkedDataMappings(sourceOntology, acronym, apikey, username).getJSONArray("sssom");
+        extractHelper.storeSSSOMMappings(mappingRepository, mappingSetRepository, sssomRes);
+
+        ApiService.uploadOntologyMappingToPortal(acronym, apikey, linkedDataMappingRepository);
+
+        return "operation ended with success";
+
+    }
+
+    private File convertMultipartFileToFile(MultipartFile multipartFile) throws IOException {
+        File file = Files.createTempFile("uploaded-ontology-", ".owl").toFile();
+        multipartFile.transferTo(file);
+        return file;
+    }
+
+
+
+
 }

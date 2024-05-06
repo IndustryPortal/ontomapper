@@ -18,8 +18,8 @@ public class RootController {
     @GetMapping("")
     public JSONObject getRoot(HttpServletRequest request) {
         JSONObject json = new JSONObject();
-        json.put("developer", "Abdelouadoud Rasmi");
-        json.put("email", "abdelouadoudrasmi@gmail.com");
+        json.put("developer", "Abdelouadoud Rasmi, Nasreddine Bouchemel");
+        json.put("email", "abdelouadoudrasmi@gmail.com, bouchemelnasreddine@gmail.com");
         json.put("github", "https://github.com/rasmi-aw");
         json.put("project_repo", "https://github.com/rasmi-aw/ontomapper");
         json.put("note", "You have to provide the api-key and username while submitting your requests");

@@ -27,4 +27,21 @@ public enum MappingType {
         return false;
     }
 
+    @Override
+    public String toString() {
+        switch (this) {
+            case SUBCLASS_OF:
+                return "owl:subClassOf";
+            case EQUIVALENT_CLASSES:
+                return "owl:equivalentClass";
+            case DISJOINT_CLASSES:
+                return "owl:disjointWith";
+            case DISJOINT_UNION:
+                return "owl:disjointUnion";
+            default:
+                return "";
+        }
+    }
+
+
 }

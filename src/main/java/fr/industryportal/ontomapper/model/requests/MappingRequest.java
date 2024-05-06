@@ -1,5 +1,7 @@
 package fr.industryportal.ontomapper.model.requests;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.industryportal.ontomapper.helpers.DBCast;
 import fr.industryportal.ontomapper.model.entities.Mapping;
 import fr.industryportal.ontomapper.model.entities.enums.EntityType;
@@ -15,6 +17,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 
 /**
@@ -178,6 +181,10 @@ public class MappingRequest implements DBCast<Mapping, MappingSetRepository> {
     @Setter
     private Long set_id;
 
+    public static MappingRequest fromJSON(String json) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(json, MappingRequest.class);
+    }
 
     @Override
     public Mapping toDBModel(MappingSetRepository mappingSetRepository, String createdBy) {

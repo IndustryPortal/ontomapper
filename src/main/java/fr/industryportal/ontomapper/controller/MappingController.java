@@ -2,6 +2,7 @@ package fr.industryportal.ontomapper.controller;
 
 
 import fr.industryportal.ontomapper.cache.CacheMapping;
+import fr.industryportal.ontomapper.helpers.ExtractHelper;
 import fr.industryportal.ontomapper.model.entities.Contribution;
 import fr.industryportal.ontomapper.model.entities.Contributor;
 import fr.industryportal.ontomapper.model.entities.Mapping;
@@ -19,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -26,6 +28,7 @@ import java.util.stream.Stream;
  * @author Abdelwadoud Rasmi
  * Controller to manage mappings
  */
+@CrossOrigin(origins = "http://127.0.0.1:3000")
 @RestController
 @RequestMapping("/mapping")
 public class MappingController {
@@ -58,6 +61,16 @@ public class MappingController {
             mappingSet.getSource().forEach(ms -> mappings.addAll(CacheMapping.getInstance(mappingRepository).get(ms.getId(), from)));
             return mappings;
         }
+    }
+
+    @GetMapping("/byId")
+    public Mapping getMappingById(@RequestParam String id) {
+        ExtractHelper.logger.log(Level.INFO, "getting mapping element from:" + id);
+        // Use the mappingRepository to fetch the Mapping by id
+        Optional<Mapping> mapping = mappingRepository.findByMappingId(id);
+
+        // Return the Mapping if found
+        return mapping.orElse(null);
     }
 
     /**

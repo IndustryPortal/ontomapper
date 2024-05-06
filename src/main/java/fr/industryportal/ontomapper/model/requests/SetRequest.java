@@ -1,8 +1,10 @@
 package fr.industryportal.ontomapper.model.requests;
 
 import fr.industryportal.ontomapper.helpers.DBCast;
+import fr.industryportal.ontomapper.model.entities.Mapping;
 import fr.industryportal.ontomapper.model.entities.MappingSet;
 import fr.industryportal.ontomapper.model.entities.enums.EntityType;
+import fr.industryportal.ontomapper.model.repos.MappingRepository;
 import fr.industryportal.ontomapper.model.repos.MappingSetRepository;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -87,6 +89,10 @@ public class SetRequest implements DBCast<MappingSet, MappingSetRepository> {
 
     @Getter
     @Setter
+    private List<MappingRequest> mappings;
+
+    @Getter
+    @Setter
     private String subject_match_field;
 
     @Getter
@@ -121,6 +127,6 @@ public class SetRequest implements DBCast<MappingSet, MappingSetRepository> {
                 object_type, object_source, object_source_version, mapping_provider,
                 mapping_tool, mapping_date, subject_match_field, object_match_field,
                 subject_preprocessing, object_preprocessing, see_also, other, comment,
-                new Date(), null, false);
+                new Date(), false);
     }
 }

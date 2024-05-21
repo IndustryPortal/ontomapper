@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2008, 2009, 2010, 2011, 2015 by the Department of Computer 
+	Science in the University of Oxford; see lgpl-3.0.txt and gpl.txt for details -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<prerequisites>
+		<maven>3.0.5</maven>
+	</prerequisites>
+
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
+
+	<!-- USAGE: `mvn compile` to compile main sources. `mvn test` to compile 
+		all tests and run AllQuickTests. `mvn -PallTests test` to compile all tests 
+		and run AllTests. `mvn package` to assemble the Protege plugin, the standalone 
+		CLI with all dependencies, and the source code package. `mvn install` to 
+		run all the preceeding tasks, and to generate a standalone HermiT library 
+		without dependencies. This will also generate the JUnit reports and attempt 
+		to SCP the build results to linux.cs.ox.ac.uk. -->
+
+	<groupId>net.sourceforge.owlapi</groupId>
+	<artifactId>org.semanticweb.hermit</artifactId>
+	<version>1.4.5.519</version>
+	<packaging>bundle</packaging>
+
+	<name>HermiT</name>
+	<url>http://hermit-reasoner.com/</url>
+	<description>HermiT is reasoner for ontologies written using the Web Ontology Language (OWL). Given an OWL file, HermiT can determine whether or not the ontology is consistent, identify subsumption relationships between classes, and much more.
+	This is the maven build of HermiT and is designed for people who wish to use HermiT from within the OWL API. It is now versioned in the main HermiT version repository, although not officially supported by the HermiT developers.
+	The version number of this package is a composite of the HermiT version and a value representing the OWLAPI release it is compatible with. Note that the group id for the upstream HermiT is com.hermit-reasoner, while this fork is released under net.sourceforge.owlapi.
+	This fork exists to allow HermiT users to use newer OWLAPI versions than the ones supported by the original HermiT codebase.
+	This package includes the Jautomata library (http://jautomata.sourceforge.net/), and builds with it directly. This library appears to be no longer under active development, and so a &quot;fork&quot; seems appropriate. No development is intended or anticipated on this code base.</description>
+
+	<licenses>
+		<license>
+			<name>LGPL</name>
+			<url>http://www.gnu.org/licenses/lgpl-3.0.txt</url>
+		</license>
+	</licenses>
+
+	<properties>
+		<!-- General info. -->
+		<homepage>http://hermit-reasoner.com/</homepage>
+		<updatefile>PUT ON GITHUB/update.properties</updatefile>
+		<mainClass>org.semanticweb.HermiT.cli.CommandLine</mainClass>
+		<!-- structure of output files -->
+		<reportsDirectory>${project.build.directory}/junit-reports</reportsDirectory>
+		<!-- To generate a debug version, use `mvn -DdebugHermiT=true` when running 
+			Maven. -->
+		<debugHermiT>false</debugHermiT>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<profiles>
+		<profile>
+			<id>release</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+				<property>
+					<name>performRelease</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.6</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<version>3.0.1</version>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<version>1.6.7</version>
+						<extensions>true</extensions>
+						<configuration>
+							<serverId>ossrh</serverId>
+							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+							<autoReleaseAfterClose>true</autoReleaseAfterClose>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.6.0</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.19.1</version>
+				<configuration>
+					<excludes>
+						<exclude>**/BlockingValidatorTest.java</exclude>
+					</excludes>
+
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.0.2</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.0.1</version>
+				<executions>
+					<execution>
+						<id>attach-source</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.0.1</version>
+				<configuration>
+					<show>public</show>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>3.2.0</version>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+						<Implementation-Title>${project.name}</Implementation-Title>
+						<Implementation-Vendor>Oxford University, wrapped by the OWLAPI
+							Team</Implementation-Vendor>
+						<Implementation-Version>${project.version}.${maven.build.timestamp}</Implementation-Version>
+						<Build-Date>${timestamp}</Build-Date>
+						<Bundle-Name>HermiT Reasoner</Bundle-Name>
+						<Bundle-Category>protege</Bundle-Category>
+						<Bundle-Description>An OWL 2 reasoner</Bundle-Description>
+						<Bundle-DocURL>${homepage}</Bundle-DocURL>
+						<Bundle-SymbolicName>${project.artifactId};singleton:=true</Bundle-SymbolicName>
+						<Bundle-Vendor>Boris Motik, Birte Glimm, Giorgos Stoilos, and Ian
+							Horrocks, wrapped by the OWLAPI Team</Bundle-Vendor>
+						<Bundle-Version>${project.version}</Bundle-Version>
+						<Update-Url>${updatefile}</Update-Url>
+						<Embed-Transitive>true</Embed-Transitive>
+						<Embed-Dependency>
+							automaton,
+							commons-logging,
+							axiom-api,
+							axiom-c14n,
+							axiom-impl,
+							axiom-dom
+						</Embed-Dependency>
+						<Export-Package>
+							org.semanticweb.HermiT.*,
+							rationals.*
+						</Export-Package>
+						<Import-Package>
+							!org.apache.*,
+							!gnu.getopt,
+							!javax.*,
+							javax.xml.stream.*,
+							!org.codehaus.*,
+							!org.jaxen*,
+							org.protege.editor.owl.*;version="4.3",
+							<!-- equivalent to [4.3,infinity) -->
+							*
+						</Import-Package>
+					</instructions>
+					<executions>
+						<execution>
+							<id>bundle-manifest</id>
+							<phase>install</phase>
+							<goals>
+								<goal>manifest</goal>
+							</goals>
+						</execution>
+					</executions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.1.3</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.owlapi</groupId>
+			<artifactId>owlapi-distribution</artifactId>
+			<version>5.1.9</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.ws.commons.axiom</groupId>
+			<artifactId>axiom-api</artifactId>
+			<version>1.2.14</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.ws.commons.axiom</groupId>
+			<artifactId>axiom-c14n</artifactId>
+			<version>1.2.14</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.ws.commons.axiom</groupId>
+			<artifactId>axiom-impl</artifactId>
+			<version>1.2.14</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.ws.commons.axiom</groupId>
+			<artifactId>axiom-dom</artifactId>
+			<version>1.2.14</version>
+		</dependency>
+		<dependency>
+			<groupId>dk.brics.automaton</groupId>
+			<artifactId>automaton</artifactId>
+			<version>1.11-8</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>edu.stanford.protege</groupId>
+			<artifactId>org.protege.editor.owl</artifactId>
+			<version>4.3.0</version>
+			<optional>true</optional>
+			<exclusions>
+				<exclusion>
+					<groupId>org.testng</groupId>
+					<artifactId>testng</artifactId>
+				</exclusion>
+				<exclusion>
+					<artifactId>protege-owlapi-extensions</artifactId>
+					<groupId>edu.stanford.protege</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>org.protege.xmlcatalog</artifactId>
+					<groupId>edu.stanford.protege</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>owlapi-distribution</artifactId>
+					<groupId>net.sourceforge.owlapi</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>gnu.getopt</groupId>
+			<artifactId>java-getopt</artifactId>
+			<version>1.0.13</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.trove4j</groupId>
+			<artifactId>trove4j</artifactId>
+			<version>3.0.3</version>
+		</dependency>
+	</dependencies>
+
+	<developers>
+		<developer>
+			<id>bmotik</id>
+			<name>Boris Motik</name>
+			<email>boris.motik@cs.ox.ac.uk</email>
+		</developer>
+		<developer>
+			<id>bglimm</id>
+			<name>Birte Glimm</name>
+			<email>birte.glimm@uni-ulm.de</email>
+		</developer>
+		<developer>
+			<id>ignazio1977</id>
+			<name>Ignazio Palmisano</name>
+			<email>ignazio1977@users.sourceforge.net</email>
+		</developer>
+		<developer>
+			<id>phillord</id>
+			<name>Phillip Lord</name>
+			<email>phillip.lord@newcastle.ac.uk</email>
+		</developer>
+	</developers>
+
+
+	<mailingLists>
+		<mailingList>
+			<name>Hermit Users Group</name>
+			<archive>http://groups.google.com/group/hermit-users</archive>
+		</mailingList>
+	</mailingLists>
+
+
+	<scm>
+		<connection>scm:git:git@github.com:phillord/hermit-reasoner.git</connection>
+		<developerConnection>scm:git:git@github.com:phillord/hermit-reasoner.git</developerConnection>
+		<url>git@github.com:phillord/hermit-reasoner.git</url>
+	</scm>
+
+</project>

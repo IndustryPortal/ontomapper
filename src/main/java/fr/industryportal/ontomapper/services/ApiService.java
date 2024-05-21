@@ -1,6 +1,6 @@
 package fr.industryportal.ontomapper.services;
 
-import fr.industryportal.ontomapper.config.Config;
+import fr.industryportal.ontomapper.config.AppConfig;
 import fr.industryportal.ontomapper.helpers.CronHelper;
 import fr.industryportal.ontomapper.model.entities.LinkedDataMapping;
 import fr.industryportal.ontomapper.model.repos.LinkedDataMappingRepository;
@@ -37,7 +37,7 @@ public class ApiService {
         String queryParams = "username=" + username + "&apikey=" + apikey;
 
         // Build the request URI with parameters
-        URI uri = URI.create(Config.SELF_URL + "set" + "?" + queryParams);
+        URI uri = URI.create(AppConfig.getInstance().getSelfUrl() + "set" + "?" + queryParams);
 
         // Create the HttpClient
         HttpClient httpClient = HttpClient.newBuilder().build();
@@ -67,7 +67,7 @@ public class ApiService {
         String queryParams = "username=" + username + "&apikey=" + apikey;
 
         // Build the request URI with parameters
-        URI uri = URI.create(Config.SELF_URL + "mapping" + "?" + queryParams);
+        URI uri = URI.create(AppConfig.getInstance().getSelfUrl() + "mapping" + "?" + queryParams);
 
         // Create the HttpClient
         HttpClient httpClient = HttpClient.newBuilder().build();
@@ -104,7 +104,7 @@ public class ApiService {
 
 
         // Build the request URI with parameters
-        URI uri = URI.create(Config.SELF_URL + "manchester/" + acronym + "/extract" + "?" + queryParams);
+        URI uri = URI.create(AppConfig.getInstance().getSelfUrl() + "manchester/" + acronym + "/extract" + "?" + queryParams);
 
         // Create the HttpClient
         HttpClient httpClient = HttpClient.newBuilder().build();
@@ -200,7 +200,7 @@ public class ApiService {
                                 //post the mappingJson to http://data.industryportal.enit.fr/mappings
                                 try {
                                     System.out.println("posting mpping " + mappingJson.getString("name") );
-                                    String url = "https://data.industryportal.enit.fr/mappings" + "?apikey=" + apikey;
+                                    String url = AppConfig.getInstance().getApiUrl()+ "mappings" + "?apikey=" + apikey;
                                     CloseableHttpClient httpClient = HttpClients.createDefault();
                                     HttpPost httpPost = new HttpPost(url);
                                     StringEntity requestEntity = new StringEntity(mappingJson.toString(), ContentType.APPLICATION_JSON);

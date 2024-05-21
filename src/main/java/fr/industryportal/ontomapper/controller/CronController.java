@@ -121,9 +121,9 @@ public class CronController {
         String apikey = user.getApikey();
         String username = user.getUsername();
 
-        ExtractorController extCOn = new ExtractorController();
-
-        extCOn.extractTriplesWithJena(request, acronym);
+//        ExtractorController extCOn = new ExtractorController();
+//
+//        extCOn.extractTriplesWithJena(request, acronym);
 
         ExtractHelper extractHelper = new ExtractHelper();
 

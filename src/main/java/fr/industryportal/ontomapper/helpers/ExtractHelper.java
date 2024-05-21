@@ -1,10 +1,8 @@
 package fr.industryportal.ontomapper.helpers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import fr.industryportal.ontomapper.config.Config;
+import fr.industryportal.ontomapper.config.AppConfig;
 import fr.industryportal.ontomapper.controller.CronController;
-import fr.industryportal.ontomapper.model.entities.Contribution;
-import fr.industryportal.ontomapper.model.entities.Contributor;
 import fr.industryportal.ontomapper.model.entities.Mapping;
 import fr.industryportal.ontomapper.model.entities.enums.MappingSetType;
 import fr.industryportal.ontomapper.model.entities.enums.MappingType;
@@ -15,7 +13,6 @@ import fr.industryportal.ontomapper.model.requests.LinkedDataMappingRequest;
 import fr.industryportal.ontomapper.model.requests.MappingRequest;
 import fr.industryportal.ontomapper.model.requests.SetRequest;
 import fr.industryportal.ontomapper.services.ApiService;
-import jakarta.json.Json;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.*;
@@ -32,18 +29,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URL;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 
 /**
  * @author Nasreddine Bouchemel
@@ -270,7 +262,7 @@ public class ExtractHelper {
 
     public String downloadOntologyFile(String apikey, String acronym) {
         try {
-            URL url = new URL(Config.API_URL + "/ontologies/" + acronym + "/download?apikey=" + apikey);
+            URL url = new URL(AppConfig.getInstance().getApiUrl() + "/ontologies/" + acronym + "/download?apikey=" + apikey);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             con.setRequestProperty("Accept", "*/*");
@@ -284,17 +276,17 @@ public class ExtractHelper {
             String lastModified = con.getHeaderField("Last-Modified");
             fileName = lastModified + ' ' + fileName.substring(0, fileName.length() - 1);
 
-            File file = new File(Config.ONTOLOGY_FOLDER, fileName);
+            File file = new File(AppConfig.getInstance().getOntologyFolder(), fileName);
 
             // Check if the file exists
             if (file.exists()) {
                 ExtractHelper.logger.log(Level.INFO,"The file already exists.");
-                return Config.ONTOLOGY_FOLDER + fileName;
+                return AppConfig.getInstance().getOntologyFolder() + fileName;
             }
 
             //BufferedInputStream in = new BufferedInputStream(con.getErrorStream());
             BufferedInputStream in = new BufferedInputStream(con.getInputStream());
-            FileOutputStream fileOutputStream = new FileOutputStream(new File(Config.ONTOLOGY_FOLDER + fileName));
+            FileOutputStream fileOutputStream = new FileOutputStream(new File(AppConfig.getInstance().getOntologyFolder() + fileName));
             byte dataBuffer[] = new byte[1024];
             int bytesRead;
             while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
@@ -303,7 +295,7 @@ public class ExtractHelper {
             fileOutputStream.flush();
             fileOutputStream.close();
             ExtractHelper.logger.log(Level.INFO,"file downloading done");
-            return Config.ONTOLOGY_FOLDER + fileName;
+            return AppConfig.getInstance().getOntologyFolder() + fileName;
         } catch (IOException e) {
             // handle exception
             e.printStackTrace();

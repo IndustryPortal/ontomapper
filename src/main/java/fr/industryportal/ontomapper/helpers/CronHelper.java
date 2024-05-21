@@ -1,6 +1,6 @@
 package fr.industryportal.ontomapper.helpers;
 
-import fr.industryportal.ontomapper.config.Config;
+import fr.industryportal.ontomapper.config.AppConfig;
 import fr.industryportal.ontomapper.model.repos.LinkedDataMappingRepository;
 import fr.industryportal.ontomapper.model.repos.ManchesterMappingRepository;
 import net.minidev.json.JSONArray;
@@ -27,7 +27,6 @@ import java.util.logging.Level;
 public class CronHelper {
 
 
-    private static final String API_URL = "http://data.industryportal.enit.fr/ontologies/";
 
     public static int parseAllPortalClasses(String apikey, String username, ManchesterMappingRepository repo) {
         ExtractHelper extractHelper = new ExtractHelper();
@@ -86,7 +85,7 @@ public class CronHelper {
         List<String> list = new ArrayList<>();
         int responseCode;
         try {
-            URL url = new URL(Config.API_URL + "?apikey=" + apikey);
+            URL url = new URL(AppConfig.getInstance().getApiUrl() + "?apikey=" + apikey);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.connect();
@@ -134,7 +133,7 @@ public class CronHelper {
             int responseCode;
             try {
                 //URL url = new URL(Config.API_URL + "ontologies/" + acronym + "/classes?"+ "apikey=" + apikey +"&page=" + page );
-                URL url = new URL(Config.API_URL + "ontologies/" + acronym + "/classes?page=" + page + "&apikey=" + apikey );
+                URL url = new URL(AppConfig.getInstance().getApiUrl() + "ontologies/" + acronym + "/classes?page=" + page + "&apikey=" + apikey );
 
                 HttpClient client = HttpClient.newBuilder()
                         .version(HttpClient.Version.HTTP_1_1)

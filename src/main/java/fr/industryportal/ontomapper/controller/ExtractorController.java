@@ -1,12 +1,8 @@
 package fr.industryportal.ontomapper.controller;
 
-import fr.industryportal.ontomapper.config.Config;
 import fr.industryportal.ontomapper.helpers.ExtractHelper;
 import fr.industryportal.ontomapper.model.repos.*;
 import fr.industryportal.ontomapper.model.requests.User;
-import fr.industryportal.ontomapper.services.ApiService;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;

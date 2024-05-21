@@ -33,3 +33,6 @@ build/
 .vscode/
 /src/main/resources/ontologies/
 /.env
+
+
+~/.m2/repository/

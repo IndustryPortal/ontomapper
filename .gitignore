@@ -36,3 +36,6 @@ build/
 
 
 ~/.m2/repository/
+
+# Ignore application.properties
+src/main/resources/application.properties

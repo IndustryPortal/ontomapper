@@ -26,7 +26,6 @@ public class RootController {
         json.put("note", "You have to provide the api-key and username while submitting your requests");
         json.put("description", "This service is a mapping storing service that you can add to your Ontoportal instance, it uses the SSSOM standard.");
         json.put("api", "/swagger-ui/index.html#");
-        json.put("config", appConfig.getApiUrl());
         return json;
     }
 

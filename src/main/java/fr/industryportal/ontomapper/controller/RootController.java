@@ -23,7 +23,7 @@ public class RootController {
     public JSONObject getRoot(HttpServletRequest request) {
         JSONObject json = new JSONObject();
         json.put("project_repo", "https://github.com/IndustryPortal/ontomapper");
-        json.put("note", "You have to provide the api-key and username while submitting your requests");
+        json.put("note", "You have to provide the api-key and username of your Ontoportal account while submitting your requests");
         json.put("description", "This service is a mapping storing service that you can add to your Ontoportal instance, it uses the SSSOM standard.");
         json.put("api", "/swagger-ui/index.html#");
         return json;

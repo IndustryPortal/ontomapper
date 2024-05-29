@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,8 +39,11 @@ public class ManchesterOwlController {
     @Autowired
     LinkedDataMappingRepository linkedDataMappingRepository;
 
+    @Autowired
+    ManchesterMappingHelper manchesterMappingHelper;
+
     @GetMapping("/{acronym}/extract")
-    public String extractClassRelationsByClassId(HttpServletRequest request, @PathVariable String acronym, @RequestParam String classUri) {
+    public String extractClassRelationsByClassId(HttpServletRequest request, @PathVariable String acronym, @RequestParam String classUri) throws IOException {
         System.out.println("======looking for mapping of class:" + classUri + " from " + acronym + " ontology");
         ExtractHelper.logger.info("======looking for mapping of class:" + classUri + " from " + acronym + " ontology");
         ExtractHelper extractHelper = new ExtractHelper();
@@ -66,7 +70,7 @@ public class ManchesterOwlController {
             return o.toString();
         }
 
-        JSONArray result = ManchesterMappingHelper.extractManchesterMappingsByClassId(ontology, acronym, classUri, manchesterMappingRepository);
+        JSONArray result = manchesterMappingHelper.extractManchesterMappingsByClassId(ontology, acronym, classUri, filePath, manchesterMappingRepository);
 
 
         return  result.toString();

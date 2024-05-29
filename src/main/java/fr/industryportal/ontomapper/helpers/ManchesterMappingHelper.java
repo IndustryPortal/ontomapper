@@ -6,26 +6,30 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.semanticweb.owlapi.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import uk.ac.manchester.cs.owl.owlapi.OWLDisjointClassesAxiomImpl;
 import uk.ac.manchester.cs.owl.owlapi.OWLDisjointUnionAxiomImpl;
 import uk.ac.manchester.cs.owl.owlapi.OWLEquivalentClassesAxiomImpl;
 import uk.ac.manchester.cs.owl.owlapi.OWLSubClassOfAxiomImpl;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Set;
 
+@Component
 public class ManchesterMappingHelper {
 
 
+    @Autowired
+    private ExtractHelper extractHelper;
 
 
-    public static JSONArray extractManchesterMappingsByClassId(OWLOntology ontology, String acronym, String classUri, ManchesterMappingRepository repo) {
+    public JSONArray extractManchesterMappingsByClassId(OWLOntology ontology, String acronym, String classUri, String ontologyFilePath,  ManchesterMappingRepository repo) {
         System.out.println("======looking for mapping of class:" + classUri + " from " + acronym + " ontology");
         ExtractHelper.logger.info("======looking for mapping of class:" + classUri + " from " + acronym + " ontology");
 
-        ExtractHelper extractHelper = new ExtractHelper();
         JSONArray result = new JSONArray();
-        if (classUri.equals("http://purl.obolibrary.org/obo/BFO_0000020")) {
+        if (classUri.equals("https://spec.industrialontologies.org/ontology/core/Core/SupplierRole")) {
             int b =5;
         }
         for (OWLAxiom axiom : ontology.getLogicalAxioms()) {
@@ -57,7 +61,7 @@ public class ManchesterMappingHelper {
                         String axiomType = axiom.getAxiomType().getName();
                         String axiomManchesterSyntax = extractHelper.convertToManchesterSyntax(axiom, classUri, axiomType);
                         if (axiomManchesterSyntax.equals("")) continue;
-                        String formattedBody = extractHelper.replaceClassURIsWithLabels(axiomManchesterSyntax, ontology, axiom);
+                        String formattedBody = extractHelper.replaceClassURIsWithLabels(axiomManchesterSyntax, ontologyFilePath, axiom);
                         if (formattedBody.contains("Prefix")) continue;
                         obj.put("classUri", classUri );
                         obj.put("ontologyAcronym", acronym);
@@ -76,7 +80,7 @@ public class ManchesterMappingHelper {
                         String axiomType = axiom.getAxiomType().getName();
                         String axiomManchesterSyntax = extractHelper.convertToManchesterSyntax(axiom, classUri, axiomType);
                         if (axiomManchesterSyntax.equals("")) continue;
-                        String formattedBody = extractHelper.replaceClassURIsWithLabels(axiomManchesterSyntax, ontology, axiom);
+                        String formattedBody = extractHelper.replaceClassURIsWithLabels(axiomManchesterSyntax, ontologyFilePath, axiom);
                         if (formattedBody.contains("Prefix")) continue;
                         obj.put("classUri", classUri );
                         obj.put("ontologyAcronym", acronym);
@@ -95,7 +99,7 @@ public class ManchesterMappingHelper {
                         String axiomType = axiom.getAxiomType().getName();
                         String axiomManchesterSyntax = extractHelper.convertToManchesterSyntax(axiom, classUri, axiomType);
                         if (axiomManchesterSyntax.equals("")) continue;
-                        String formattedBody = extractHelper.replaceClassURIsWithLabels(axiomManchesterSyntax, ontology, axiom);
+                        String formattedBody = extractHelper.replaceClassURIsWithLabels(axiomManchesterSyntax, ontologyFilePath, axiom);
                         if (formattedBody.contains("Prefix")) continue;
                         obj.put("classUri", classUri );
                         obj.put("ontologyAcronym", acronym);
@@ -112,7 +116,7 @@ public class ManchesterMappingHelper {
                     String axiomType = axiom.getAxiomType().getName();
                     String axiomManchesterSyntax = extractHelper.convertToManchesterSyntax(axiom, classUri, axiomType);
                     if (axiomManchesterSyntax.equals("")) continue;
-                    String formattedBody = extractHelper.replaceClassURIsWithLabels(axiomManchesterSyntax, ontology, axiom);
+                    String formattedBody = extractHelper.replaceClassURIsWithLabels(axiomManchesterSyntax, ontologyFilePath, axiom);
                     if (formattedBody.contains("Prefix")) continue;
                     obj.put("classUri", classUri );
                     obj.put("ontologyAcronym", acronym);

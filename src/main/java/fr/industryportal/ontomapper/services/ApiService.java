@@ -2,6 +2,7 @@ package fr.industryportal.ontomapper.services;
 
 import fr.industryportal.ontomapper.config.AppConfig;
 import fr.industryportal.ontomapper.helpers.CronHelper;
+import fr.industryportal.ontomapper.helpers.ExtractHelper;
 import fr.industryportal.ontomapper.model.entities.LinkedDataMapping;
 import fr.industryportal.ontomapper.model.repos.LinkedDataMappingRepository;
 import fr.industryportal.ontomapper.model.requests.LinkedDataMappingRequest;
@@ -15,6 +16,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.jena.base.Sys;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -27,9 +30,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Component
 public class ApiService {
 
-    public static Long postMappingSet(String apikey, String username, JSONObject mappingSet) {
+
+    public Long postMappingSet(String apikey, String username, JSONObject mappingSet) {
 
         JSONArray body = new JSONArray();
         body.put(mappingSet);
@@ -61,7 +66,7 @@ public class ApiService {
             return null;
         }
     }
-    public static Integer postMappings(String apikey, String username, JSONArray mappings) {
+    public Integer postMappings(String apikey, String username, JSONArray mappings) {
 
         // Set request parameters
         String queryParams = "username=" + username + "&apikey=" + apikey;
@@ -91,7 +96,7 @@ public class ApiService {
         }
     }
 
-    public static Integer extractManchesterMappings(String apikey, String username,  String acronym, String classUri ) throws UnsupportedEncodingException {
+    public Integer extractManchesterMappings(String apikey, String username,  String acronym, String classUri ) throws UnsupportedEncodingException {
 
         // Set request parameters
         String encodedUsername = URLEncoder.encode(username, "UTF-8");
@@ -129,11 +134,11 @@ public class ApiService {
 
     }
 
-    public static Integer uploadMappingToPortal(String apikey, LinkedDataMappingRepository repo) {
+    public Integer uploadMappingToPortal(String apikey, LinkedDataMappingRepository repo) {
 
         System.out.println("=====start uploading mappings to portal");
 
-        CronHelper.extractAcronyms(apikey).forEach(
+        (new CronHelper()).extractAcronyms(apikey).forEach(
                 acronym -> {
                     System.out.println("starting with " + acronym + " mappings");
                     List<LinkedDataMapping> mappings =  repo.findBySourceOntologyAcronym(acronym);

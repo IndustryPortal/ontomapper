@@ -14,7 +14,11 @@ import fr.industryportal.ontomapper.model.requests.MappingRequest;
 import fr.industryportal.ontomapper.model.requests.SetRequest;
 import fr.industryportal.ontomapper.services.ApiService;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.ontology.OntClass;
+import org.apache.jena.ontology.OntModel;
+import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.rdf.model.*;
+import org.apache.jena.util.FileManager;
 import org.apache.jena.vocabulary.*;
 import org.coode.owlapi.manchesterowlsyntax.ManchesterOWLSyntaxOntologyFormat;
 import org.json.JSONArray;
@@ -23,6 +27,8 @@ import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.io.StringDocumentTarget;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -40,8 +46,14 @@ import java.util.regex.Pattern;
 /**
  * @author Nasreddine Bouchemel
  */
+@Component
 public class ExtractHelper {
 
+    @Autowired
+    private TripleStoreHelper tripleStoreHelper;
+
+    @Autowired
+    ApiService apiService;
 
     private static final Pattern RELATION_PATTERN = Pattern.compile("([!\\^\\+]?)(.+)");
 
@@ -73,14 +85,14 @@ public class ExtractHelper {
 
     }
 
-    public static String replaceClassURIsWithLabels(String ontologyString, OWLOntology ontology, OWLAxiom axiom) {
+    public String replaceClassURIsWithLabels(String ontologyString, String ontologoyFilePath, OWLAxiom axiom) {
         String replacedString = ontologyString;
 
         // Get all class axioms from the ontology
         for (OWLEntity cls : axiom.getSignature()) {
             // Get the class URI and label
             String classURI = cls.getIRI().toString();
-            String label = getClassLabel(classURI, ontology);
+            String label = tripleStoreHelper.getLabelFromTripleStore(classURI);
 
             //check if classUri is in replacedString first
             if (!replacedString.contains(classURI)) continue;
@@ -142,6 +154,33 @@ public class ExtractHelper {
 
         return targetClass.getIRI().getFragment(); // Use the class fragment (the last part of the iri) as the label if no rdfs:label found
 
+    }
+
+    public static String getClassLabel(String classUri, String ontologyFile) {
+        // Load the ontology
+        OntModel model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM);
+        FileManager.get().readModel(model, ontologyFile);
+
+        // Get the class by URI
+        OntClass ontClass = model.getOntClass(classUri);
+        if (ontClass == null) {
+            System.err.println("Class not found in ontology: " + classUri);
+            return null;
+        }
+
+        // Get the rdfs:label property
+        Property labelProperty = model.getProperty(RDFS.label.getURI());
+
+        // Get the label of the class
+        NodeIterator labels = ontClass.listPropertyValues(labelProperty);
+        if (labels.hasNext()) {
+            RDFNode labelNode = labels.next();
+            if (labelNode.isLiteral()) {
+                return labelNode.asLiteral().getString();
+            }
+        }
+
+        return classUri;
     }
 
     public String convertToManchesterSyntax(OWLAxiom axiom, String classUri, String axiomType) {
@@ -299,6 +338,8 @@ public class ExtractHelper {
         } catch (IOException e) {
             // handle exception
             e.printStackTrace();
+            ExtractHelper.logger.log(Level.SEVERE, "error downloading ontology file");
+            ExtractHelper.logger.log(Level.SEVERE, e.getMessage());
             return null;
         }
     }
@@ -836,7 +877,7 @@ public class ExtractHelper {
     }
 
     private Long postAndGetMappingSetId(JSONObject mappingSet, String apikey, String username) {
-        return ApiService.postMappingSet(apikey, username, mappingSet);
+        return apiService.postMappingSet(apikey, username, mappingSet);
     }
 
     public static boolean isImportedClass(OWLOntology ontology, OWLClass cls) {
@@ -855,9 +896,9 @@ public class ExtractHelper {
 
         JSONArray sssomResults = new JSONArray();
 
-        Long interMappingSetId = ApiService.postMappingSet(apikey, username, getInterMappingSet(sourceOntology, acronym));
+        Long interMappingSetId = apiService.postMappingSet(apikey, username, getInterMappingSet(sourceOntology, acronym));
 
-        Long crossMappingSetId = ApiService.postMappingSet(apikey, username, getCrossMappingSet(sourceOntology, acronym));
+        Long crossMappingSetId = apiService.postMappingSet(apikey, username, getCrossMappingSet(sourceOntology, acronym));
 
         for (OWLClass cls : sourceOntology.getClassesInSignature()) {
             for (OWLSubClassOfAxiom ax : sourceOntology.getSubClassAxiomsForSubClass(cls)) {

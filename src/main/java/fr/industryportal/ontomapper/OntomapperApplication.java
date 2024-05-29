@@ -1,6 +1,7 @@
 package fr.industryportal.ontomapper;
 
 import fr.industryportal.ontomapper.config.AppConfig;
+import fr.industryportal.ontomapper.helpers.TripleStoreHelper;
 import fr.industryportal.ontomapper.model.repos.ContributionRepository;
 import fr.industryportal.ontomapper.model.repos.ContributorRepository;
 import fr.industryportal.ontomapper.model.repos.MappingRepository;
@@ -25,6 +26,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @EnableFeignClients
 public class OntomapperApplication extends SpringBootServletInitializer implements CommandLineRunner {
+
+    @Autowired
+    private TripleStoreHelper tripleStoreHelper;
 
     @Autowired
     private MappingSetRepository mappingSetRepository;

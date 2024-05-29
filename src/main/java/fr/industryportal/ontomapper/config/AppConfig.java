@@ -22,6 +22,10 @@ public class AppConfig {
     private String apiUrl;
     @Value("${ontology.folder}")
     private String ontologyFolder;
+
+    @Value("${4store.url}")
+    private String tripleStoreUrl;
+
     @Value("${proxy.host}")
     private String proxyHost;
     @Value("${proxy.port}")
@@ -38,6 +42,10 @@ public class AppConfig {
 
     public String getOntologyFolder() {
         return ontologyFolder;
+    }
+
+    public String getTripleStoreUrl() {
+        return tripleStoreUrl;
     }
 
     public String getProxyHost() {

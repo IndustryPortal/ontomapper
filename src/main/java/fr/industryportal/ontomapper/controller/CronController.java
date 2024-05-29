@@ -17,10 +17,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,6 +45,15 @@ public class CronController {
     @Autowired
     MappingSetRepository mappingSetRepository;
 
+    @Autowired
+    CronHelper cronHelper;
+
+    @Autowired
+    ExtractHelper extractHelper;
+
+    @Autowired
+    ApiService apiService;
+
 
     @GetMapping("/manchester")
     public String parseAllOntologiesForManchester(HttpServletRequest request) {
@@ -51,7 +62,7 @@ public class CronController {
         String apikey = user.getApikey();
         String username = user.getUsername();
         //CronHelper.extractAcronyms(apikey);
-        CronHelper.parseAllPortalClasses(apikey, username, manchesterMappingRepository);
+        cronHelper.parseAllPortalClasses(apikey, username, manchesterMappingRepository);
         return "ok";
     }
 
@@ -61,7 +72,7 @@ public class CronController {
         User user = ((User) request.getAttribute("user"));
         String apikey = user.getApikey();
         String username = user.getUsername();
-        CronHelper.parseOntologiesForLinkedDataMappings(apikey, username, linkedDataMappingRepository );
+        cronHelper.parseOntologiesForLinkedDataMappings(apikey, username, linkedDataMappingRepository );
         return "ok";
 
     }
@@ -86,7 +97,7 @@ public class CronController {
             return null;
         }
 
-        String result = CronHelper.parseOntologyForManchester(sourceOntology, apikey, username, acronym, manchesterMappingRepository);
+        String result = cronHelper.parseOntologyForManchester(sourceOntology, filepath, apikey, username, acronym, manchesterMappingRepository);
         if (result == "done") {
             return "done parsing mappings from " + acronym;
         } else {
@@ -99,7 +110,7 @@ public class CronController {
         User user = ((User) request.getAttribute("user"));
         String apikey = user.getApikey();
         String username = user.getUsername();
-        return ApiService.uploadMappingToPortal(apikey, linkedDataMappingRepository);
+        return apiService.uploadMappingToPortal(apikey, linkedDataMappingRepository);
 
     }
 
@@ -125,7 +136,6 @@ public class CronController {
 //
 //        extCOn.extractTriplesWithJena(request, acronym);
 
-        ExtractHelper extractHelper = new ExtractHelper();
 
         String filepath = extractHelper.downloadOntologyFile(apikey, acronym);
         if (filepath == null) {
@@ -137,7 +147,7 @@ public class CronController {
         }
 
         //intra mapping
-        CronHelper.parseOntologyForManchester(sourceOntology, apikey, username, acronym, manchesterMappingRepository);
+        cronHelper.parseOntologyForManchester(sourceOntology, filepath, apikey, username, acronym, manchesterMappingRepository);
 
         //cross && inter mappings
         JSONArray result =  extractHelper.extractLinkedDataMappings(sourceOntology, acronym, apikey, username).getJSONArray("linked_data");
@@ -170,11 +180,18 @@ public class CronController {
         ExtractHelper extractHelper = new ExtractHelper();
 
         OWLOntology sourceOntology = ExtractHelper.getOntologyFromFile(convertMultipartFileToFile(ontologyFile));
+
+        // Save the MultipartFile to a temporary file
+        Path tempFilePath = Files.createTempFile(ontologyFile.getName(), ".owl");
+        File tempFile = tempFilePath.toFile();
+        ontologyFile.transferTo(tempFile);
+
+
         if (sourceOntology == null) {
             return "Error: could not read ontology from file.";
         }
 
-        CronHelper.parseOntologyForManchester(sourceOntology, apikey, username, acronym, manchesterMappingRepository);
+        cronHelper.parseOntologyForManchester(sourceOntology, tempFile.getPath(), apikey, username, acronym, manchesterMappingRepository);
 
         //cross && inter mappings
         JSONArray result =  extractHelper.extractLinkedDataMappings(sourceOntology, acronym, apikey, username).getJSONArray("linked_data");
@@ -183,6 +200,8 @@ public class CronController {
         extractHelper.storeSSSOMMappings(mappingRepository, mappingSetRepository, sssomRes);
 
         ApiService.uploadOntologyMappingToPortal(acronym, apikey, linkedDataMappingRepository);
+
+        tempFile.delete();
 
         return "operation ended with success";
 

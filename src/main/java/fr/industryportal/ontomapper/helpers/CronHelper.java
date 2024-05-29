@@ -8,7 +8,9 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,20 +26,24 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
 
+@Component
 public class CronHelper {
 
 
+    @Autowired
+    private ManchesterMappingHelper manchesterMappingHelper;
 
-    public static int parseAllPortalClasses(String apikey, String username, ManchesterMappingRepository repo) {
-        ExtractHelper extractHelper = new ExtractHelper();
-        CronHelper.extractAcronyms(apikey).forEach(
+    @Autowired
+    private ExtractHelper extractHelper;
+    public int parseAllPortalClasses(String apikey,  String username, ManchesterMappingRepository repo) {
+        extractAcronyms(apikey).forEach(
                 acro -> {
                     String filepath = extractHelper.downloadOntologyFile(apikey, acro);
                     if (filepath != null) {
                         OWLOntology sourceOntology = ExtractHelper.getOntologyFromFile(new File(filepath));
 
                         if (sourceOntology != null) {
-                            parseOntologyForManchester(sourceOntology, apikey, username, acro, repo);
+                            parseOntologyForManchester(sourceOntology, filepath,  apikey, username, acro, repo);
                         }
                     }
                 }
@@ -47,24 +53,22 @@ public class CronHelper {
 
     }
 
-    public static String parseOntologyForManchester(OWLOntology ontology, String apikey, String username, String acro, ManchesterMappingRepository repo) {
-        ExtractHelper extractHelper = new ExtractHelper();
+    public String parseOntologyForManchester(OWLOntology ontology, String ontolgoyFilePath, String apikey, String username, String acro, ManchesterMappingRepository repo)  {
         if  (ontology == null) {
             org.json.JSONObject o = new org.json.JSONObject();
             o.put("message", "error in reading" + acro +" ontology file");
             return o.toString();
         }
-        for (String cls : CronHelper.getClassesByAcronym(acro, apikey)) {
-            ManchesterMappingHelper.extractManchesterMappingsByClassId(ontology, acro, cls, repo);
+        for (String cls : getClassesByAcronym(acro, apikey)) {
+            manchesterMappingHelper.extractManchesterMappingsByClassId(ontology, acro, cls, ontolgoyFilePath, repo);
         }
         return "done";
     }
 
-    public static int parseOntologiesForLinkedDataMappings(String apikey, String username, LinkedDataMappingRepository repo) {
+    public  int parseOntologiesForLinkedDataMappings(String apikey, String username, LinkedDataMappingRepository repo) {
 
-        ExtractHelper extractHelper = new ExtractHelper();
 
-        CronHelper.extractAcronyms(apikey).forEach(
+        extractAcronyms(apikey).forEach(
                 acronym -> {
                     String filepath = extractHelper.downloadOntologyFile(apikey, acronym);
                     if (filepath != null) {
@@ -81,7 +85,7 @@ public class CronHelper {
     }
 
 
-    public static List<String> extractAcronyms(String apikey) {
+    public  List<String> extractAcronyms(String apikey) {
         List<String> list = new ArrayList<>();
         int responseCode;
         try {
@@ -123,7 +127,7 @@ public class CronHelper {
 //        return templist ;
     }
 
-    public static List<String> getClassesByAcronym(String acronym, String apikey) {
+    public  List<String> getClassesByAcronym(String acronym, String apikey) {
         ExtractHelper.logger.info("=====getting classes for ontology " + acronym + " from portal");
         List<String> classes = new ArrayList<>();
         int page = 1;

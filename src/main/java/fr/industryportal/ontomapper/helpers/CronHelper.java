@@ -1,5 +1,6 @@
 package fr.industryportal.ontomapper.helpers;
 
+import com.github.owlcs.ontapi.Ontology;
 import fr.industryportal.ontomapper.config.AppConfig;
 import fr.industryportal.ontomapper.model.repos.LinkedDataMappingRepository;
 import fr.industryportal.ontomapper.model.repos.ManchesterMappingRepository;
@@ -8,6 +9,7 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Component;
@@ -34,16 +36,23 @@ public class CronHelper {
     private ManchesterMappingHelper manchesterMappingHelper;
 
     @Autowired
+    private OntologyHelper ontologyHelper;
+
+    @Autowired
     private ExtractHelper extractHelper;
     public int parseAllPortalClasses(String apikey,  String username, ManchesterMappingRepository repo) {
         extractAcronyms(apikey).forEach(
                 acro -> {
                     String filepath = extractHelper.downloadOntologyFile(apikey, acro);
                     if (filepath != null) {
-                        OWLOntology sourceOntology = ExtractHelper.getOntologyFromFile(new File(filepath));
+                        //OWLOntology sourceOntology = ExtractHelper.getOntologyFromFile(new File(filepath));
 
-                        if (sourceOntology != null) {
+                        Ontology sourceOntology;
+                        try {
+                            sourceOntology = ontologyHelper.getOntologyWithModelFromFile(new File(filepath));
                             parseOntologyForManchester(sourceOntology, filepath,  apikey, username, acro, repo);
+                        } catch (OWLOntologyCreationException e) {
+                            ExtractHelper.logger.log(Level.WARNING, e.getMessage());
                         }
                     }
                 }
@@ -53,7 +62,7 @@ public class CronHelper {
 
     }
 
-    public String parseOntologyForManchester(OWLOntology ontology, String ontolgoyFilePath, String apikey, String username, String acro, ManchesterMappingRepository repo)  {
+    public String parseOntologyForManchester(Ontology ontology, String ontolgoyFilePath, String apikey, String username, String acro, ManchesterMappingRepository repo)  {
         if  (ontology == null) {
             org.json.JSONObject o = new org.json.JSONObject();
             o.put("message", "error in reading" + acro +" ontology file");
@@ -72,11 +81,15 @@ public class CronHelper {
                 acronym -> {
                     String filepath = extractHelper.downloadOntologyFile(apikey, acronym);
                     if (filepath != null) {
-                        OWLOntology sourceOntology = ExtractHelper.getOntologyFromFile(new File(filepath));
+                        //OWLOntology sourceOntology = ExtractHelper.getOntologyFromFile(new File(filepath));
 
-                        if (sourceOntology != null) {
+                        Ontology sourceOntology;
+                        try {
+                            sourceOntology = ontologyHelper.getOntologyWithModelFromFile(new File(filepath));
                             org.json.JSONArray result = extractHelper.extractLinkedDataMappings(sourceOntology, acronym, apikey, username).getJSONArray("linked_data");
                             extractHelper.storeLinkedDataMappings(repo, result);
+                        } catch (OWLOntologyCreationException e) {
+                            ExtractHelper.logger.log(Level.WARNING, e.getMessage());
                         }
                     }
                 }

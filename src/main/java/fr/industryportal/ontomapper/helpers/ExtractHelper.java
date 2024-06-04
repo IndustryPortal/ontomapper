@@ -1,6 +1,8 @@
 package fr.industryportal.ontomapper.helpers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.owlcs.ontapi.OntManagers;
+import com.github.owlcs.ontapi.Ontology;
 import fr.industryportal.ontomapper.config.AppConfig;
 import fr.industryportal.ontomapper.controller.CronController;
 import fr.industryportal.ontomapper.model.entities.Mapping;
@@ -13,12 +15,7 @@ import fr.industryportal.ontomapper.model.requests.LinkedDataMappingRequest;
 import fr.industryportal.ontomapper.model.requests.MappingRequest;
 import fr.industryportal.ontomapper.model.requests.SetRequest;
 import fr.industryportal.ontomapper.services.ApiService;
-import org.apache.jena.graph.Triple;
-import org.apache.jena.ontology.OntClass;
-import org.apache.jena.ontology.OntModel;
-import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.rdf.model.*;
-import org.apache.jena.util.FileManager;
 import org.apache.jena.vocabulary.*;
 import org.coode.owlapi.manchesterowlsyntax.ManchesterOWLSyntaxOntologyFormat;
 import org.json.JSONArray;
@@ -55,6 +52,9 @@ public class ExtractHelper {
     @Autowired
     ApiService apiService;
 
+    @Autowired
+    OntologyHelper ontologyHelper;
+
     private static final Pattern RELATION_PATTERN = Pattern.compile("([!\\^\\+]?)(.+)");
 
     public static Logger logger =  Logger.getLogger(CronController.class.getName());
@@ -85,6 +85,8 @@ public class ExtractHelper {
 
     }
 
+
+
     public String replaceClassURIsWithLabels(String ontologyString, String ontologoyFilePath, OWLAxiom axiom) {
         String replacedString = ontologyString;
 
@@ -104,84 +106,97 @@ public class ExtractHelper {
         return replacedString.replace("<", "").replace(">", "");
     }
 
-    public static String getClassLabel(String classUri, OWLOntology ontology) {
-//        OWLDataFactory dataFactory = ontology.getOWLOntologyManager().getOWLDataFactory();
+//    public static String getClassLabel(String classUri, Ontology ontology) {
+////        OWLDataFactory dataFactory = ontology.getOWLOntologyManager().getOWLDataFactory();
+////        OWLClass cls = dataFactory.getOWLClass(IRI.create(classUri));
+////
+////        ontology.getAnnotations().iterator().next().annotationValue();
+////
+////        for (OWLAnnotationAssertionAxiom axiom : ontology.getAnnotationAssertionAxioms(cls.getIRI())) {
+////
+////            if (  axiom.getProperty().isLabel()) {
+////                OWLLiteral literal = (OWLLiteral) axiom.getValue();
+////                String label = literal.getLiteral();
+////                return label;
+////
+////            }
+////        }
+////
+////        // Return the class URI as the label if no label annotation is found
+////        return classUri;
+//        // Get the class for the given URI
+//        // Get the class for the given URI
+//        // Get the class for the given URI
+// /*       OWLDataFactory dataFactory = ontology.getOWLOntologyManager().getOWLDataFactory();
 //        OWLClass cls = dataFactory.getOWLClass(IRI.create(classUri));
 //
-//        ontology.getAnnotations().iterator().next().annotationValue();
+//        // Retrieve the annotations on the class for rdfs:label
+//        OWLAnnotationProperty labelProperty = dataFactory.getOWLAnnotationProperty(OWLRDFVocabulary.RDFS_LABEL.getIRI());
+//        for (OWLAnnotationAssertionAxiom annotationAxiom : ontology.getAnnotationAssertionAxioms(cls.getIRI())) {
+//            if (annotationAxiom.getProperty().equals(labelProperty)) {
+//                OWLAnnotationValue value = annotationAxiom.getValue();
+//                if (value instanceof OWLLiteral) {
+//                    return ((OWLLiteral) value).getLiteral();
+//                }
+//            }
+//        }*/
+////        OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
+////        OWLDataFactory dataFactory = manager.getOWLDataFactory();
+////        OWLClass targetClass = dataFactory.getOWLClass(IRI.create(classUri));
+////
+////        for (OWLAnnotationAssertionAxiom axiom : ontology.getAxioms(AxiomType.ANNOTATION_ASSERTION)) {
+////            OWLAnnotationSubject subject = axiom.getSubject();
+////            if (subject instanceof IRI && subject.equals(targetClass.getIRI())) {
+////                OWLAnnotationValue value = axiom.getValue();
+////                if (value instanceof OWLLiteral) {
+////                    return ((OWLLiteral) value).getLiteral();
+////                }
+////            }
+////        }
+////
+////        return targetClass.getIRI().getFragment(); // Use the class fragment (the last part of the iri) as the label if no rdfs:label found
 //
-//        for (OWLAnnotationAssertionAxiom axiom : ontology.getAnnotationAssertionAxioms(cls.getIRI())) {
+//        Resource classResource = ontology.asGraphModel().createResource(classUri);
 //
-//            if (  axiom.getProperty().isLabel()) {
-//                OWLLiteral literal = (OWLLiteral) axiom.getValue();
-//                String label = literal.getLiteral();
-//                return label;
+//        StmtIterator iterator = ontology.asGraphModel().listStatements(classResource, RDFS.label, (String) null);
 //
+//        while (iterator.hasNext()) {
+//            Statement stmt = iterator.nextStatement();
+//            if (stmt.getObject().isLiteral()) {
+//                return stmt.getObject().asLiteral().getString();
 //            }
 //        }
 //
-//        // Return the class URI as the label if no label annotation is found
+//        // If no label is found, return null or a default value
 //        return classUri;
-        // Get the class for the given URI
-        // Get the class for the given URI
-        // Get the class for the given URI
- /*       OWLDataFactory dataFactory = ontology.getOWLOntologyManager().getOWLDataFactory();
-        OWLClass cls = dataFactory.getOWLClass(IRI.create(classUri));
+//    }
 
-        // Retrieve the annotations on the class for rdfs:label
-        OWLAnnotationProperty labelProperty = dataFactory.getOWLAnnotationProperty(OWLRDFVocabulary.RDFS_LABEL.getIRI());
-        for (OWLAnnotationAssertionAxiom annotationAxiom : ontology.getAnnotationAssertionAxioms(cls.getIRI())) {
-            if (annotationAxiom.getProperty().equals(labelProperty)) {
-                OWLAnnotationValue value = annotationAxiom.getValue();
-                if (value instanceof OWLLiteral) {
-                    return ((OWLLiteral) value).getLiteral();
-                }
-            }
-        }*/
-        OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-        OWLDataFactory dataFactory = manager.getOWLDataFactory();
-        OWLClass targetClass = dataFactory.getOWLClass(IRI.create(classUri));
-
-        for (OWLAnnotationAssertionAxiom axiom : ontology.getAxioms(AxiomType.ANNOTATION_ASSERTION)) {
-            OWLAnnotationSubject subject = axiom.getSubject();
-            if (subject instanceof IRI && subject.equals(targetClass.getIRI())) {
-                OWLAnnotationValue value = axiom.getValue();
-                if (value instanceof OWLLiteral) {
-                    return ((OWLLiteral) value).getLiteral();
-                }
-            }
-        }
-
-        return targetClass.getIRI().getFragment(); // Use the class fragment (the last part of the iri) as the label if no rdfs:label found
-
-    }
-
-    public static String getClassLabel(String classUri, String ontologyFile) {
-        // Load the ontology
-        OntModel model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM);
-        FileManager.get().readModel(model, ontologyFile);
-
-        // Get the class by URI
-        OntClass ontClass = model.getOntClass(classUri);
-        if (ontClass == null) {
-            System.err.println("Class not found in ontology: " + classUri);
-            return null;
-        }
-
-        // Get the rdfs:label property
-        Property labelProperty = model.getProperty(RDFS.label.getURI());
-
-        // Get the label of the class
-        NodeIterator labels = ontClass.listPropertyValues(labelProperty);
-        if (labels.hasNext()) {
-            RDFNode labelNode = labels.next();
-            if (labelNode.isLiteral()) {
-                return labelNode.asLiteral().getString();
-            }
-        }
-
-        return classUri;
-    }
+//    public static String getClassLabel(String classUri, String ontologyFile) {
+//        // Load the ontology
+//        OntModel model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM);
+//        FileManager.get().readModel(model, ontologyFile);
+//
+//        // Get the class by URI
+//        OntClass ontClass = model.getOntClass(classUri);
+//        if (ontClass == null) {
+//            System.err.println("Class not found in ontology: " + classUri);
+//            return null;
+//        }
+//
+//        // Get the rdfs:label property
+//        Property labelProperty = model.getProperty(RDFS.label.getURI());
+//
+//        // Get the label of the class
+//        NodeIterator labels = ontClass.listPropertyValues(labelProperty);
+//        if (labels.hasNext()) {
+//            RDFNode labelNode = labels.next();
+//            if (labelNode.isLiteral()) {
+//                return labelNode.asLiteral().getString();
+//            }
+//        }
+//
+//        return classUri;
+//    }
 
     public String convertToManchesterSyntax(OWLAxiom axiom, String classUri, String axiomType) {
         //OWLOntologyLoaderConfiguration loaderConfig = new OWLOntologyLoaderConfiguration();
@@ -466,7 +481,7 @@ public class ExtractHelper {
         return mappingSetJSON;
     }
 
-    public JSONObject getCrossMappingSet(OWLOntology ontology, String acronym) {
+    public JSONObject getCrossMappingSet(Ontology ontology, String acronym) {
         JSONArray creators = new JSONArray();
         JSONObject creator = new JSONObject();
         creator.put("id", "ontomapper");
@@ -503,7 +518,7 @@ public class ExtractHelper {
         return mappingSetJSON;
     }
 
-    public JSONObject getInterMappingSet(OWLOntology ontology, String acronym) {
+    public JSONObject getInterMappingSet(Ontology ontology, String acronym) {
         JSONArray creators = new JSONArray();
         JSONObject creator = new JSONObject();
         creator.put("id", "ontomapper");
@@ -591,7 +606,7 @@ public class ExtractHelper {
         return acronym;
     }
 
-    private String getOntologyUri(OWLOntology ontology, String acronym) {
+    private String getOntologyUri(Ontology ontology, String acronym) {
         if (ontology.getOntologyID().getOntologyIRI().isPresent()) {
             return ontology.getOntologyID().getOntologyIRI().get().toString();
         }
@@ -629,30 +644,30 @@ public class ExtractHelper {
         return "http://industryportal.enit.fr/sssom#manual";
     }
 
-    public String getCategory(ArrayList<Triple> triples, String id) {
-        for (Triple triple : triples
-        ) {
-            if (
-                    triple.getSubject().toString().equals(id)
-            )
-                if (
-                        triple.getSubject().toString().equals(id) && triple.getPredicate().toString().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
-                ) return triple.getObject().toString().split("/")[triple.getObject().toString().split("/").length - 1];
+//    public String getCategory(ArrayList<Triple> triples, String id) {
+//        for (Triple triple : triples
+//        ) {
+//            if (
+//                    triple.getSubject().toString().equals(id)
+//            )
+//                if (
+//                        triple.getSubject().toString().equals(id) && triple.getPredicate().toString().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+//                ) return triple.getObject().toString().split("/")[triple.getObject().toString().split("/").length - 1];
+//
+//            if (
+//                    triple.getSubject().toString().equals(id) && (triple.getPredicate().toString().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest") || triple.getPredicate().toString().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#first"))
+//            ) return "rdf:List";
+//
+//        }
+//        return "";
+//    }
 
-            if (
-                    triple.getSubject().toString().equals(id) && (triple.getPredicate().toString().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest") || triple.getPredicate().toString().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#first"))
-            ) return "rdf:List";
-
-        }
-        return "";
-    }
-
-    public String getCategory(Resource resource) {
-        if (resource.hasProperty(RDF.type, OWL.Restriction)) return "OWL_RESTRICTION";
-        if (resource.hasProperty(RDF.type, XSD.nonNegativeInteger)) return "XSD_NON_NEGATIVE_INTEGER";
-        if (resource.hasProperty(RDF.first)) return "RDF_LIST";
-        return "";
-    }
+//    public String getCategory(Resource resource) {
+//        if (resource.hasProperty(RDF.type, OWL.Restriction)) return "OWL_RESTRICTION";
+//        if (resource.hasProperty(RDF.type, XSD.nonNegativeInteger)) return "XSD_NON_NEGATIVE_INTEGER";
+//        if (resource.hasProperty(RDF.first)) return "RDF_LIST";
+//        return "";
+//    }
 
     public String getType(Resource resource) {
         if (resource.hasProperty(RDF.type, OWL.Class)) return "OWL_CLASS";
@@ -889,7 +904,7 @@ public class ExtractHelper {
         return false;
     }
 
-    public JSONObject extractLinkedDataMappings(OWLOntology sourceOntology, String acronym, String apikey, String username) {
+    public JSONObject extractLinkedDataMappings(Ontology sourceOntology, String acronym, String apikey, String username) {
         ExtractHelper.logger.log(Level.INFO, "=====starting parsing ontology " + acronym + " to get sssom/linked data mappings");
 
         JSONArray results = new JSONArray();
@@ -1139,7 +1154,7 @@ public class ExtractHelper {
 //        return crossMappings;
     }
 
-    private JSONObject createMappingElement(OWLOntology sourceOntology, String acronym, String subjectUri, String objectUri, String predicateUri, String mappingSetId) {
+    private JSONObject createMappingElement(Ontology sourceOntology, String acronym, String subjectUri, String objectUri, String predicateUri, String mappingSetId) {
         JSONObject tripleJSON = new JSONObject();
         tripleJSON.put("name", "mapping between " + subjectUri + " and " + objectUri);
         tripleJSON.put("creator", "ontomapper");
@@ -1159,16 +1174,16 @@ public class ExtractHelper {
 
     }
 
-    private JSONObject createSSSOMMappingElement(OWLOntology ontology, String acronym, String mappingType, String subjectUri, String objectUri, String predicateUri, Set<OWLOntology> imports, String mappingSetId) {
+    private JSONObject createSSSOMMappingElement(Ontology ontology, String acronym, String mappingType, String subjectUri, String objectUri, String predicateUri, Set<OWLOntology> imports, String mappingSetId) {
         JSONObject tripleJSON = new JSONObject();
         tripleJSON.put("other", getMappingType(subjectUri, objectUri, imports));
         tripleJSON.put("mapping_id", subjectUri + "_" + predicateUri + "_" + objectUri);
         tripleJSON.put("mapping_provider", "");
         tripleJSON.put("mapping_tool", "Ontomapper");
-        tripleJSON.put("mapping_tool_version", "");
+        tripleJSON.put("mapping_tool_version", "1.0.0");
         tripleJSON.put("match_string", "");
         tripleJSON.put("subject_id", subjectUri);
-        tripleJSON.put("subject_label", getClassLabel(subjectUri, ontology));
+        tripleJSON.put("subject_label", ontologyHelper.getClassLabel(subjectUri, ontology));
         tripleJSON.put("subject_type", "OWL_CLASS");
         tripleJSON.put("subject_category", "");
         tripleJSON.put("subject_source", getOntologyUri(ontology, acronym));
@@ -1179,7 +1194,7 @@ public class ExtractHelper {
         tripleJSON.put("predicate_label", "");
         tripleJSON.put("predicate_modifier", "EMPTY");
         tripleJSON.put("object_id", objectUri);
-        tripleJSON.put("object_label", getClassLabel(objectUri, ontology));
+        tripleJSON.put("object_label", ontologyHelper.getClassLabel(objectUri, ontology));
         tripleJSON.put("object_type", "OWL_CLASS");
         tripleJSON.put("object_category", "");
         tripleJSON.put("object_source", getTargetOntologyAcronym(ontology, acronym));

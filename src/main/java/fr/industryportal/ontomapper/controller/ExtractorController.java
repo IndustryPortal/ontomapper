@@ -1,6 +1,8 @@
 package fr.industryportal.ontomapper.controller;
 
+import com.github.owlcs.ontapi.Ontology;
 import fr.industryportal.ontomapper.helpers.ExtractHelper;
+import fr.industryportal.ontomapper.helpers.OntologyHelper;
 import fr.industryportal.ontomapper.model.repos.*;
 import fr.industryportal.ontomapper.model.requests.User;
 import org.apache.jena.graph.Triple;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
 
 
 /**
@@ -42,6 +45,9 @@ public class ExtractorController {
 
     @Autowired
     private LinkedDataMappingRepository linkedDataMappingRepository;
+
+    @Autowired
+    private OntologyHelper ontologyHelper;
 
     @GetMapping("")
     public String extractTriplesWithJena(HttpServletRequest request, @RequestParam String acronym) throws OWLOntologyCreationException, IOException {
@@ -121,10 +127,18 @@ public class ExtractorController {
         if (filepath == null) {
             return null;
         }
-        OWLOntology sourceOntology = ExtractHelper.getOntologyFromFile(new File(filepath));
-        if (sourceOntology == null) {
+//        OWLOntology sourceOntology = ExtractHelper.getOntologyFromFile(new File(filepath));
+//        if (sourceOntology == null) {
+//            return null;
+//        }
+        Ontology sourceOntology;
+        try {
+            sourceOntology = ontologyHelper.getOntologyWithModelFromFile(new File(filepath));
+        } catch (OWLOntologyCreationException e) {
+            ExtractHelper.logger.log(Level.WARNING, e.getMessage());
             return null;
         }
+
         JSONArray result =  extractHelper.extractLinkedDataMappings(sourceOntology, acronym, apikey, username).getJSONArray("linked_data");
         JSONArray sssomRes =   extractHelper.extractLinkedDataMappings(sourceOntology, acronym, apikey, username).getJSONArray("sssom");
         extractHelper.storeLinkedDataMappings(linkedDataMappingRepository, result);

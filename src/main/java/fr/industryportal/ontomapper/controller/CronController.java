@@ -174,7 +174,7 @@ public class CronController {
         tripleStoreHelper.getOntologyFromTripleStore(acronym);
 
         //intra mapping
-        //cronHelper.parseOntologyForManchester(sourceOntology, filepath, apikey, username, acronym, manchesterMappingRepository);
+        cronHelper.parseOntologyForManchester(sourceOntology, filepath, apikey, username, acronym, manchesterMappingRepository);
 
         //cross && inter mappings
         JSONArray result = extractHelper.extractLinkedDataMappings(sourceOntology, acronym, apikey, username).getJSONArray("linked_data");

@@ -17,7 +17,7 @@ public class OntologyHelper {
         return OntManagers.createManager().loadOntologyFromOntologyDocument(file);
     }
 
-    public static String getClassLabel(String classUri, Ontology ontology) {
+    public String getClassLabel(String classUri, Ontology ontology) {
 //        OWLDataFactory dataFactory = ontology.getOWLOntologyManager().getOWLDataFactory();
 //        OWLClass cls = dataFactory.getOWLClass(IRI.create(classUri));
 //

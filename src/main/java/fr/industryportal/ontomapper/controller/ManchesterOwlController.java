@@ -3,8 +3,10 @@ package fr.industryportal.ontomapper.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.owlcs.ontapi.Ontology;
 import fr.industryportal.ontomapper.helpers.ExtractHelper;
 import fr.industryportal.ontomapper.helpers.ManchesterMappingHelper;
+import fr.industryportal.ontomapper.helpers.OntologyHelper;
 import fr.industryportal.ontomapper.model.entities.LinkedDataMapping;
 import fr.industryportal.ontomapper.model.entities.ManchesterMapping;
 import fr.industryportal.ontomapper.model.repos.LinkedDataMappingRepository;
@@ -23,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 
 /**
@@ -42,6 +45,9 @@ public class ManchesterOwlController {
     @Autowired
     ManchesterMappingHelper manchesterMappingHelper;
 
+    @Autowired
+    OntologyHelper ontologyHelper;
+
     @GetMapping("/{acronym}/extract")
     public String extractClassRelationsByClassId(HttpServletRequest request, @PathVariable String acronym, @RequestParam String classUri) throws IOException {
         System.out.println("======looking for mapping of class:" + classUri + " from " + acronym + " ontology");
@@ -60,15 +66,23 @@ public class ManchesterOwlController {
             return o.toString();
         }
 
-        OWLOntology ontology;
+//            ontology = ExtractHelper.getOntologyFromFile(new File(filePath));
+//        if (ontology == null) {
+//            JSONObject o = new JSONObject();
+//            o.put("message", "error in reading" + acronym +" ontology file");
+//            return o.toString();
+//        }
 
-
-            ontology = ExtractHelper.getOntologyFromFile(new File(filePath));
-        if (ontology == null) {
+        Ontology ontology;
+        try {
+            ontology = ontologyHelper.getOntologyWithModelFromFile(new File(filePath));
+        } catch (OWLOntologyCreationException e) {
+            ExtractHelper.logger.log(Level.WARNING, e.getMessage());
             JSONObject o = new JSONObject();
             o.put("message", "error in reading" + acronym +" ontology file");
             return o.toString();
         }
+
 
         JSONArray result = manchesterMappingHelper.extractManchesterMappingsByClassId(ontology, acronym, classUri, filePath, manchesterMappingRepository);
 

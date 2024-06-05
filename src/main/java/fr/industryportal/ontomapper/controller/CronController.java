@@ -171,7 +171,7 @@ public class CronController {
             return null;
         }
 
-        tripleStoreHelper.getOntologyFromTripleStore(acronym);
+        //tripleStoreHelper.getOntologyFromTripleStore(acronym);
 
         //intra mapping
         cronHelper.parseOntologyForManchester(sourceOntology, filepath, apikey, username, acronym, manchesterMappingRepository);

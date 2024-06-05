@@ -1,5 +1,10 @@
 package fr.industryportal.ontomapper.helpers;
 
+import com.github.owlcs.ontapi.Ontology;
+import com.github.owlcs.ontapi.owlapi.axioms.DisjointClassesAxiomImpl;
+import com.github.owlcs.ontapi.owlapi.axioms.DisjointUnionAxiomImpl;
+import com.github.owlcs.ontapi.owlapi.axioms.EquivalentClassesAxiomImpl;
+import com.github.owlcs.ontapi.owlapi.axioms.SubClassOfAxiomImpl;
 import fr.industryportal.ontomapper.model.repos.ManchesterMappingRepository;
 import fr.industryportal.ontomapper.model.requests.ManchesterMappingRequest;
 import org.json.JSONArray;
@@ -24,14 +29,11 @@ public class ManchesterMappingHelper {
     private ExtractHelper extractHelper;
 
 
-    public JSONArray extractManchesterMappingsByClassId(OWLOntology ontology, String acronym, String classUri, String ontologyFilePath,  ManchesterMappingRepository repo) {
+    public JSONArray extractManchesterMappingsByClassId(Ontology ontology, String acronym, String classUri, String ontologyFilePath, ManchesterMappingRepository repo) {
         System.out.println("======looking for mapping of class:" + classUri + " from " + acronym + " ontology");
         ExtractHelper.logger.info("======looking for mapping of class:" + classUri + " from " + acronym + " ontology");
 
         JSONArray result = new JSONArray();
-        if (classUri.equals("https://spec.industrialontologies.org/ontology/core/Core/SupplierRole")) {
-            int b =5;
-        }
         for (OWLAxiom axiom : ontology.getLogicalAxioms()) {
 
 //                logical axioms:
@@ -51,9 +53,8 @@ public class ManchesterMappingHelper {
 //                DataPropertyDomain
 //                DataPropertyRange
 
-            if (axiom instanceof OWLSubClassOfAxiomImpl) {
-
-                OWLClassExpression ce = ((OWLSubClassOfAxiomImpl) axiom).getSubClass();
+            if (axiom instanceof SubClassOfAxiomImpl) {
+                OWLClassExpression ce = ((SubClassOfAxiomImpl) axiom).getSubClass();
 
                 for (OWLClass c : ce.getClassesInSignature()) {
                     if (c.getIRI().toString().equals(classUri)) {
@@ -71,9 +72,8 @@ public class ManchesterMappingHelper {
                         break;
                     }
                 }
-            }
-            else if (axiom instanceof OWLEquivalentClassesAxiomImpl) {
-                Set<OWLClassExpression> ce = ((OWLEquivalentClassesAxiomImpl) axiom).getClassExpressions();
+            } else if (axiom instanceof EquivalentClassesAxiomImpl) {
+                Set<OWLClassExpression> ce = ((EquivalentClassesAxiomImpl) axiom).getClassExpressions();
                 for (OWLClass c : ce.iterator().next().getClassesInSignature() ) {
                     if (c.getIRI().toString().equals(classUri)) {
                         JSONObject obj = new JSONObject();
@@ -90,9 +90,8 @@ public class ManchesterMappingHelper {
                         break;
                     }
                 }
-            }
-            else if (axiom instanceof OWLDisjointClassesAxiomImpl) {
-                Set<OWLClassExpression> ce = ((OWLDisjointClassesAxiomImpl) axiom).getClassExpressions();
+            } else if (axiom instanceof DisjointClassesAxiomImpl) {
+                Set<OWLClassExpression> ce = ((DisjointClassesAxiomImpl) axiom).getClassExpressions();
                 for (OWLClass c : ce.iterator().next().getClassesInSignature() ) {
                     if (c.getIRI().toString().equals(classUri)) {
                         JSONObject obj = new JSONObject();
@@ -109,9 +108,8 @@ public class ManchesterMappingHelper {
                         break;
                     }
                 }
-            }
-            else if (axiom instanceof OWLDisjointUnionAxiomImpl) {
-                if (((OWLDisjointUnionAxiomImpl) axiom).getOWLClass().getIRI().toString().equals(classUri)) {
+            } else if (axiom instanceof DisjointUnionAxiomImpl) {
+                if (((DisjointUnionAxiomImpl) axiom).getOWLClass().getIRI().toString().equals(classUri)) {
                     JSONObject obj = new JSONObject();
                     String axiomType = axiom.getAxiomType().getName();
                     String axiomManchesterSyntax = extractHelper.convertToManchesterSyntax(axiom, classUri, axiomType);
@@ -124,7 +122,84 @@ public class ManchesterMappingHelper {
                     obj.put("body", formattedBody);
                     result.put(obj );
                 }
+
+
             }
+
+//            if (axiom instanceof OWLSubClassOfAxiomImpl) {
+//
+//                OWLClassExpression ce = ((OWLSubClassOfAxiomImpl) axiom).getSubClass();
+//
+//                for (OWLClass c : ce.getClassesInSignature()) {
+//                    if (c.getIRI().toString().equals(classUri)) {
+//                        JSONObject obj = new JSONObject();
+//                        String axiomType = axiom.getAxiomType().getName();
+//                        String axiomManchesterSyntax = extractHelper.convertToManchesterSyntax(axiom, classUri, axiomType);
+//                        if (axiomManchesterSyntax.equals("")) continue;
+//                        String formattedBody = extractHelper.replaceClassURIsWithLabels(axiomManchesterSyntax, ontologyFilePath, axiom);
+//                        if (formattedBody.contains("Prefix")) continue;
+//                        obj.put("classUri", classUri );
+//                        obj.put("ontologyAcronym", acronym);
+//                        obj.put("type", axiomType);
+//                        obj.put("body", formattedBody);
+//                        result.put(obj );
+//                        break;
+//                    }
+//                }
+//            }
+//            else if (axiom instanceof OWLEquivalentClassesAxiomImpl) {
+//                Set<OWLClassExpression> ce = ((OWLEquivalentClassesAxiomImpl) axiom).getClassExpressions();
+//                for (OWLClass c : ce.iterator().next().getClassesInSignature() ) {
+//                    if (c.getIRI().toString().equals(classUri)) {
+//                        JSONObject obj = new JSONObject();
+//                        String axiomType = axiom.getAxiomType().getName();
+//                        String axiomManchesterSyntax = extractHelper.convertToManchesterSyntax(axiom, classUri, axiomType);
+//                        if (axiomManchesterSyntax.equals("")) continue;
+//                        String formattedBody = extractHelper.replaceClassURIsWithLabels(axiomManchesterSyntax, ontologyFilePath, axiom);
+//                        if (formattedBody.contains("Prefix")) continue;
+//                        obj.put("classUri", classUri );
+//                        obj.put("ontologyAcronym", acronym);
+//                        obj.put("type", axiomType);
+//                        obj.put("body", formattedBody);
+//                        result.put(obj );
+//                        break;
+//                    }
+//                }
+//            }
+//            else if (axiom instanceof OWLDisjointClassesAxiomImpl) {
+//                Set<OWLClassExpression> ce = ((OWLDisjointClassesAxiomImpl) axiom).getClassExpressions();
+//                for (OWLClass c : ce.iterator().next().getClassesInSignature() ) {
+//                    if (c.getIRI().toString().equals(classUri)) {
+//                        JSONObject obj = new JSONObject();
+//                        String axiomType = axiom.getAxiomType().getName();
+//                        String axiomManchesterSyntax = extractHelper.convertToManchesterSyntax(axiom, classUri, axiomType);
+//                        if (axiomManchesterSyntax.equals("")) continue;
+//                        String formattedBody = extractHelper.replaceClassURIsWithLabels(axiomManchesterSyntax, ontologyFilePath, axiom);
+//                        if (formattedBody.contains("Prefix")) continue;
+//                        obj.put("classUri", classUri );
+//                        obj.put("ontologyAcronym", acronym);
+//                        obj.put("type", axiomType);
+//                        obj.put("body", formattedBody);
+//                        result.put(obj );
+//                        break;
+//                    }
+//                }
+//            }
+//            else if (axiom instanceof OWLDisjointUnionAxiomImpl) {
+//                if (((OWLDisjointUnionAxiomImpl) axiom).getOWLClass().getIRI().toString().equals(classUri)) {
+//                    JSONObject obj = new JSONObject();
+//                    String axiomType = axiom.getAxiomType().getName();
+//                    String axiomManchesterSyntax = extractHelper.convertToManchesterSyntax(axiom, classUri, axiomType);
+//                    if (axiomManchesterSyntax.equals("")) continue;
+//                    String formattedBody = extractHelper.replaceClassURIsWithLabels(axiomManchesterSyntax, ontologyFilePath, axiom);
+//                    if (formattedBody.contains("Prefix")) continue;
+//                    obj.put("classUri", classUri );
+//                    obj.put("ontologyAcronym", acronym);
+//                    obj.put("type", axiomType);
+//                    obj.put("body", formattedBody);
+//                    result.put(obj );
+//                }
+//            }
 
 //                Set<OWLClass> classes = axiom.getClassesInSignature();
 //                for (OWLClass c : classes) {
